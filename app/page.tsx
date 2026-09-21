@@ -134,8 +134,8 @@ export default function Home() {
                           className="flex items-center gap-2 text-sm text-[#55534D]"
                           title={t.name}
                         >
-                          <span className="flex size-9 items-center justify-center rounded-full border border-[#E5E3DC] bg-white text-sm font-semibold text-[#1D1D1F]">
-                            <ToolMark slug={t.slug} name={t.name} className="size-4" />
+                          <span className="flex size-9 items-center justify-center text-sm font-semibold text-[#1D1D1F]">
+                            <ToolMark slug={t.slug} name={t.name} className="size-5" />
                           </span>
                           {t.name}
                         </span>
