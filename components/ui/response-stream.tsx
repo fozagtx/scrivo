@@ -251,6 +251,7 @@ function useTextStream({
   }, [textStream, isComplete, processStringTypewriter])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- streaming must kick off on mount
     startStreaming()
 
     return () => {

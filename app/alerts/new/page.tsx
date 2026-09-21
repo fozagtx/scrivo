@@ -436,7 +436,7 @@ function StepSchedule({
                 className={cn(
                   "rounded-[8px] text-sm text-[#777773]",
                   cadence === c.value &&
-                    "bg-white font-medium text-[#1D1D1F] shadow-sm",
+                    "bg-white font-medium text-[#1D1D1F] shadow-xs",
                 )}
               >
                 {c.label}

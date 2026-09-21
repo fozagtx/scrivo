@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Tag } from "lucide-react";
-import { SignInButton, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { Show, SignInButton } from "@clerk/react";
 
 import { HAS_CLERK } from "@/lib/clerk";
 
@@ -34,7 +34,7 @@ export function SiteHeader() {
         )}
         {HAS_CLERK && (
           <>
-            <SignedOut>
+            <Show when="signed-out">
               <SignInButton mode="modal">
                 <button className="text-sm text-[#1D1D1F]">Sign in</button>
               </SignInButton>
@@ -43,15 +43,15 @@ export function SiteHeader() {
                   Start comparing
                 </button>
               </SignInButton>
-            </SignedOut>
-            <SignedIn>
+            </Show>
+            <Show when="signed-in">
               <Link
                 href="/automations"
                 className="rounded-full bg-[#1D1D1F] px-5 py-2.5 text-sm font-semibold text-white"
               >
                 Open app
               </Link>
-            </SignedIn>
+            </Show>
           </>
         )}
       </div>

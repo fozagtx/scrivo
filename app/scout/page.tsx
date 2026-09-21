@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
-import { ArrowUp, Plus, ShieldCheck, Tag } from "lucide-react";
+import { ArrowUp, Plus, ShieldCheck } from "lucide-react";
 
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
@@ -21,11 +21,14 @@ import {
 } from "@/components/ui/message";
 import {
   PromptInput,
+  PromptInputAction,
   PromptInputActions,
   PromptInputTextarea,
 } from "@/components/ui/prompt-input";
 import { PromptSuggestion } from "@/components/ui/prompt-suggestion";
 import { TextShimmer } from "@/components/ui/text-shimmer";
+import { Loader } from "@/components/ui/loader";
+import { useTextStream } from "@/components/ui/response-stream";
 import { cn } from "@/lib/utils";
 
 const SUGGESTIONS = [
@@ -49,6 +52,17 @@ export default function ScoutPage() {
     api.scoutDb.messages,
     threadId ? { threadId } : "skip",
   );
+
+  // Mark history as already-seen on thread load so only genuinely new
+  // assistant replies stream in via useTextStream.
+  const [seenIds] = useState(() => new Set<string>());
+  const initThread = useRef<Id<"scoutThreads"> | null>(null);
+  useEffect(() => {
+    if (messages && initThread.current !== threadId) {
+      initThread.current = threadId;
+      messages.forEach((m) => seenIds.add(m._id));
+    }
+  }, [messages, threadId, seenIds]);
   const offers = useQuery(api.offers.list, {}) ?? [];
 
   const submit = async (text?: string) => {
@@ -157,32 +171,34 @@ export default function ScoutPage() {
               <ChatContainerRoot className="flex-1">
                 <ChatContainerContent className="flex flex-col gap-6 px-6 py-6">
                   {(!messages || messages.length === 0) && (
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center gap-2">
-                        <span className="flex size-7 items-center justify-center rounded-lg bg-[#EAF2FF] text-[#3F83F8]">
-                          <Tag className="size-4" />
-                        </span>
-                        <span className="text-sm font-semibold">Scout</span>
+                    <Message className="max-w-[92%]">
+                      <MessageAvatar
+                        src=""
+                        alt="Scout"
+                        fallback="S"
+                        className="size-7 rounded-lg bg-[#EAF2FF] text-xs font-semibold text-[#3F83F8]"
+                      />
+                      <div className="flex flex-col gap-3">
+                        <MessageContent className="bg-transparent p-0 text-sm leading-6 text-[#1D1D1F]">
+                          Tell me your budget and the kind of AI tools you use
+                          — I’ll compare live verified offers and find the best
+                          value.
+                        </MessageContent>
+                        <div className="flex flex-wrap gap-2">
+                          {SUGGESTIONS.map((s) => (
+                            <PromptSuggestion
+                              key={s}
+                              onClick={() => submit(s)}
+                            >
+                              {s}
+                            </PromptSuggestion>
+                          ))}
+                        </div>
                       </div>
-                      <p className="max-w-[92%] text-sm leading-6">
-                        Tell me your budget and the kind of AI tools you use —
-                        I’ll compare live verified offers and find the best
-                        value.
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {SUGGESTIONS.map((s) => (
-                          <PromptSuggestion
-                            key={s}
-                            onClick={() => submit(s)}
-                          >
-                            {s}
-                          </PromptSuggestion>
-                        ))}
-                      </div>
-                    </div>
+                    </Message>
                   )}
 
-                  {messages?.map((m: Doc<"scoutMessages">, i: number) =>
+                  {messages?.map((m: Doc<"scoutMessages">) =>
                     m.role === "user" ? (
                       <div key={m._id} className="t-msg-in flex justify-end">
                         <div className="max-w-[82%] rounded-2xl rounded-tr-sm bg-[#3F83F8] px-4 py-3 text-sm leading-6 text-white">
@@ -190,36 +206,29 @@ export default function ScoutPage() {
                         </div>
                       </div>
                     ) : (
-                      <Message
+                      <AssistantMessage
                         key={m._id}
-                        className="t-msg-in max-w-[92%]"
-                        style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}
-                      >
-                        <MessageAvatar
-                          src=""
-                          alt="Scout"
-                          fallback="S"
-                          className="size-7 rounded-lg bg-[#EAF2FF] text-xs font-semibold text-[#3F83F8]"
-                        />
-                        <MessageContent
-                          markdown
-                          className="prose-sm bg-transparent p-0 text-sm leading-6 text-[#1D1D1F]"
-                        >
-                          {m.content}
-                        </MessageContent>
-                      </Message>
+                        m={m}
+                        seenIds={seenIds}
+                      />
                     ),
                   )}
 
                   {sending && (
-                    <div className="flex items-center gap-2">
-                      <span className="flex size-7 items-center justify-center rounded-lg bg-[#EAF2FF] text-[#3F83F8]">
-                        <Tag className="size-4" />
-                      </span>
-                      <TextShimmer className="text-sm" duration={1.2}>
-                        Scanning live offers…
-                      </TextShimmer>
-                    </div>
+                    <Message className="max-w-[92%]">
+                      <MessageAvatar
+                        src=""
+                        alt="Scout"
+                        fallback="S"
+                        className="size-7 rounded-lg bg-[#EAF2FF] text-xs font-semibold text-[#3F83F8]"
+                      />
+                      <div className="flex items-center gap-2.5">
+                        <Loader variant="typing" size="sm" />
+                        <TextShimmer className="text-sm" duration={1.2}>
+                          Scanning live offers…
+                        </TextShimmer>
+                      </div>
+                    </Message>
                   )}
                   <ChatContainerScrollAnchor />
                 </ChatContainerContent>
@@ -235,15 +244,17 @@ export default function ScoutPage() {
                 >
                   <PromptInputTextarea placeholder="Ask Scout to compare another option..." />
                   <PromptInputActions className="justify-end">
-                    <button
-                      type="button"
-                      aria-label="Send message"
-                      onClick={() => submit()}
-                      disabled={sending || !input.trim()}
-                      className="flex size-9 items-center justify-center rounded-full bg-[#3F83F8] text-white disabled:opacity-50"
-                    >
-                      <ArrowUp className="size-4" />
-                    </button>
+                    <PromptInputAction tooltip="Send">
+                      <button
+                        type="button"
+                        aria-label="Send message"
+                        onClick={() => submit()}
+                        disabled={sending || !input.trim()}
+                        className="flex size-9 items-center justify-center rounded-full bg-[#3F83F8] text-white transition-colors hover:bg-[#2563D6] disabled:opacity-50"
+                      >
+                        <ArrowUp className="size-4" />
+                      </button>
+                    </PromptInputAction>
                   </PromptInputActions>
                 </PromptInput>
                 {error && (
@@ -308,5 +319,44 @@ export default function ScoutPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+function AssistantMessage({
+  m,
+  seenIds,
+}: {
+  m: Doc<"scoutMessages">;
+  seenIds: Set<string>;
+}) {
+  // Stream the reply only if it arrived after the thread loaded — history
+  // renders instantly. Decided once per mounted message.
+  const [animate] = useState(() => {
+    if (seenIds.has(m._id)) return false;
+    seenIds.add(m._id);
+    return true;
+  });
+  const { displayedText, isComplete } = useTextStream({
+    textStream: animate ? m.content : "",
+    mode: "typewriter",
+    speed: 60,
+    characterChunkSize: 3,
+  });
+
+  return (
+    <Message className="t-msg-in max-w-[92%]">
+      <MessageAvatar
+        src=""
+        alt="Scout"
+        fallback="S"
+        className="size-7 rounded-lg bg-[#EAF2FF] text-xs font-semibold text-[#3F83F8]"
+      />
+      <MessageContent
+        markdown
+        className="prose-sm bg-transparent p-0 text-sm leading-6 text-[#1D1D1F]"
+      >
+        {animate && !isComplete ? displayedText : m.content}
+      </MessageContent>
+    </Message>
   );
 }

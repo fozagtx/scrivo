@@ -27,7 +27,7 @@ export function DealEmailScreen({
         <Inbox className="size-3.5 text-[#3F83F8]" />
       </div>
       {/* Email card */}
-      <div className="mx-3 mt-2 flex-1 rounded-t-2xl bg-white p-3.5 shadow-sm">
+      <div className="mx-3 mt-2 flex-1 rounded-t-2xl bg-white p-3.5 shadow-xs">
         <div className="flex items-center gap-2 border-b border-[#E5E3DC] pb-2.5">
           <div className="flex size-7 items-center justify-center rounded-lg bg-[#EAF2FF]">
             <Tag className="size-3.5 text-[#3F83F8]" />

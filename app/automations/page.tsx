@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
@@ -26,6 +27,14 @@ const CADENCE_LABEL: Record<string, string> = {
 };
 
 export default function AutomationsPage() {
+  return (
+    <Suspense>
+      <AutomationsContent />
+    </Suspense>
+  );
+}
+
+function AutomationsContent() {
   const params = useSearchParams();
   const justCreated = params.get("created") === "1";
 

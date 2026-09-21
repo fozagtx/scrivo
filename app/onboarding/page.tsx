@@ -139,7 +139,7 @@ export default function OnboardingPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={resolvedEmail || "you@example.com"}
-                      className="h-10 rounded-[8px] border border-[#E5E3DC] bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-[#3F83F8]"
+                      className="h-10 rounded-[8px] border border-[#E5E3DC] bg-white px-3 text-sm outline-hidden focus:ring-2 focus:ring-[#3F83F8]"
                     />
                     <p className="text-xs text-[#777773]">
                       Your alerts will be sent here.

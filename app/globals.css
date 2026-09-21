@@ -1,35 +1,57 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
 
-@layer base {
-  :root {
-    /* Scrivo design tokens (Flowstep design system) */
-    --background: 45 23% 96%; /* #F8F7F3 warm off-white */
-    --foreground: 240 3% 12%; /* #1D1D1F */
-    --card: 0 0% 100%;
-    --card-foreground: 240 3% 12%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 3% 12%;
-    --primary: 217 89% 61%; /* #3F83F8 */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 45 14% 94%; /* #F1F0EB */
-    --secondary-foreground: 240 3% 12%;
-    --muted: 45 14% 94%;
-    --muted-foreground: 50 2% 47%; /* #777773 */
-    --accent: 217 89% 96%; /* #EAF2FF light blue */
-    --accent-foreground: 217 72% 49%; /* #2563D6 */
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 45 9% 88%; /* #E5E3DC */
-    --input: 45 9% 88%;
-    --ring: 217 89% 61%;
-    --radius: 0.875rem; /* 14px */
-    --radius-lg: 1.375rem; /* 22px */
-    --success: 134 44% 45%; /* #41A85F */
-    --success-soft: 128 50% 91%; /* #DDF4E2 */
-    --offer: 45 95% 55%; /* yellow offer badge */
-    --offer-foreground: 45 60% 20%;
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Scrivo design tokens (Flowstep design system) */
+  --color-background: #f8f7f3;
+  --color-foreground: #1d1d1f;
+  --color-card: #ffffff;
+  --color-card-foreground: #1d1d1f;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #1d1d1f;
+  --color-primary: #3f83f8;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f1f0eb;
+  --color-secondary-foreground: #1d1d1f;
+  --color-muted: #f1f0eb;
+  --color-muted-foreground: #777773;
+  --color-accent: #eaf2ff;
+  --color-accent-foreground: #2563d6;
+  --color-destructive: hsl(0 72% 51%);
+  --color-destructive-foreground: #ffffff;
+  --color-border: #e5e3dc;
+  --color-input: #e5e3dc;
+  --color-ring: #3f83f8;
+  --color-success: #41a85f;
+  --color-success-soft: #ddf4e2;
+  --color-offer: hsl(45 95% 55%);
+  --color-offer-foreground: hsl(45 60% 20%);
+  --color-ink: #1d1d1f;
+  --color-stone2: #777773;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.375rem;
+
+  --animate-typing: typing 1s infinite;
+}
+
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
   }
 }
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, ChevronDown, Tag } from "lucide-react";
-import { UserButton } from "@clerk/clerk-react";
+import { UserButton } from "@clerk/react";
 
 import { cn } from "@/lib/utils";
 import { HAS_CLERK } from "@/lib/clerk";
@@ -57,11 +57,10 @@ export function AppHeader() {
           {HAS_CLERK ? (
             <UserButton
               appearance={{ elements: { avatarBox: "size-8" } }}
-              afterSignOutUrl="/"
             />
           ) : (
             <span className="flex size-8 items-center justify-center rounded-full bg-[#3F83F8] text-xs font-semibold text-white">
-              DS
+              S
             </span>
           )}
           <ChevronDown className="size-4 text-[#777773]" />

@@ -175,7 +175,7 @@ export function DealExplorer() {
                   placeholder="Search tools or categories"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="h-10 w-full rounded-lg border border-[#D2D0C8] bg-white pl-9 pr-3 text-sm outline-none"
+                  className="h-10 w-full rounded-lg border border-[#D2D0C8] bg-white pl-9 pr-3 text-sm outline-hidden"
                 />
               </div>
               <Select
