@@ -1,53 +1,53 @@
-import { v } from "convex/values";
-import { QueryCtx, mutation, query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
+import type { QueryCtx } from "./_generated/server";
+
+export async function currentUser(ctx: QueryCtx) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) return null;
+  return await ctx.db
+    .query("users")
+    .withIndex("tokenIdentifier", (q) =>
+      q.eq("tokenIdentifier", identity.tokenIdentifier),
+    )
+    .unique();
+}
 
 export const store = mutation({
   args: {},
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Called storeUser without authentication present");
+    if (!identity) throw new Error("Not authenticated");
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("tokenIdentifier", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier),
+      )
+      .unique();
+    const fields = {
+      name: identity.name ?? identity.nickname ?? "User",
+      email: identity.email,
+      pictureUrl: identity.pictureUrl,
+    };
+    if (existing) {
+      await ctx.db.patch(existing._id, fields);
+      return existing._id;
     }
-    const user = await getUser(ctx, identity.nickname!);
-    if (user !== null) {
-      if (
-        user.name !== identity.name ||
-        user.username !== identity.nickname ||
-        user.pictureUrl !== identity.pictureUrl ||
-        user.tokenIdentifier !== identity.tokenIdentifier
-      ) {
-        await ctx.db.patch(user._id, {
-          tokenIdentifier: identity.tokenIdentifier,
-          name: identity.name,
-          username: identity.nickname,
-          pictureUrl: identity.pictureUrl,
-        });
-      }
-      return user._id;
-    }
-    // If it's a new identity, create a new `User`.
     return await ctx.db.insert("users", {
       tokenIdentifier: identity.tokenIdentifier,
-      name: identity.name!,
-      username: identity.nickname!,
-      pictureUrl: identity.pictureUrl!,
-      numPosts: 0,
+      ...fields,
     });
   },
 });
 
-export const get = query({
-  args: {
-    username: v.string(),
-  },
-  handler: async (ctx, args) => {
-    return await getUser(ctx, args.username);
+export const me = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await currentUser(ctx);
+    if (!user) return null;
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .unique();
+    return { ...user, profile };
   },
 });
-
-export async function getUser(ctx: QueryCtx, username: string) {
-  return await ctx.db
-    .query("users")
-    .withIndex("username", (q) => q.eq("username", username))
-    .unique();
-}
