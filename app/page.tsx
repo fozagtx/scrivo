@@ -1,10 +1,5 @@
 import Link from "next/link";
-import {
-  BadgePercent,
-  Bell,
-  Calculator,
-  Workflow,
-} from "lucide-react";
+import { Bell, Radar } from "lucide-react";
 
 import { SiteHeader } from "@/components/site-header";
 import { BackgroundSwitcher } from "@/components/background-switcher";
@@ -36,23 +31,7 @@ const WATCHED_TOOLS = [
   { slug: "runway", name: "Runway" },
 ];
 
-const FEATURES = [
-  {
-    icon: Calculator,
-    title: "Real monthly cost",
-    body: "See what you’ll actually pay after the intro offer ends.",
-  },
-  {
-    icon: BadgePercent,
-    title: "Intro savings",
-    body: "Compare the discount, trial length, and renewal price side by side.",
-  },
-  {
-    icon: Workflow,
-    title: "Best for your workflow",
-    body: "Choose tools based on how you work — not hype.",
-  },
-];
+
 
 export default function Home() {
   return (
@@ -157,14 +136,151 @@ export default function Home() {
           <h2 className="text-center text-3xl font-medium -tracking-[0.06em]">
             The details that matter
           </h2>
-          <div className="mt-12 grid gap-12 md:grid-cols-3 md:gap-20">
-            {FEATURES.map((f) => (
-              <div key={f.title}>
-                <f.icon className="size-5 text-[#3F83F8]" />
-                <h3 className="mt-4 font-semibold">{f.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[#777773]">{f.body}</p>
-              </div>
-            ))}
+          <div className="mt-12 grid gap-4 md:grid-cols-3">
+            {/* Digest email — wide */}
+            <div className="rounded-2xl border border-[#E5E3DC] bg-white md:col-span-2">
+              <BentoVisual className="items-center justify-center px-6">
+                <div className="w-full max-w-[300px] rounded-xl border border-[#E5E3DC] bg-white p-3 shadow-sm">
+                  <p className="text-[10px] font-semibold text-[#1D1D1F]">
+                    2 deals hit your watchlist
+                  </p>
+                  {[
+                    { slug: "claude", name: "Claude Pro", price: "$17/mo" },
+                    { slug: "cursor", name: "Cursor", price: "Free" },
+                  ].map((d) => (
+                    <div
+                      key={d.slug}
+                      className="mt-1.5 flex items-center gap-2 rounded-lg border border-[#E5E3DC] px-2 py-1.5"
+                    >
+                      <ToolMark slug={d.slug} name={d.name} className="size-3.5" />
+                      <span className="flex-1 text-[9px] font-medium text-[#1D1D1F]">
+                        {d.name}
+                      </span>
+                      <span className="text-[9px] font-semibold text-[#1D1D1F]">
+                        {d.price}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </BentoVisual>
+              <BentoCopy
+                title="Digests that only fire on matches"
+                body="An email goes out the moment a deal matches your watchlist — never noise, never spam."
+              />
+            </div>
+            {/* Tools watched */}
+            <div className="rounded-2xl border border-[#E5E3DC] bg-white">
+              <BentoVisual className="items-center justify-center">
+                <div className="grid grid-cols-3 gap-3">
+                  {["claude", "chatgpt", "cursor", "devin", "perplexity", "gemini"].map(
+                    (slug) => (
+                      <span
+                        key={slug}
+                        className="flex size-11 items-center justify-center rounded-full border border-[#E5E3DC] bg-white shadow-sm"
+                      >
+                        <ToolMark slug={slug} name={slug} className="size-5" />
+                      </span>
+                    ),
+                  )}
+                </div>
+              </BentoVisual>
+              <BentoCopy
+                title="Every major AI tool, watched"
+                body="12 vendors tracked across coding, writing, research, video, and design."
+              />
+            </div>
+            {/* Savings */}
+            <div className="rounded-2xl border border-[#E5E3DC] bg-white">
+              <BentoVisual className="items-center justify-center px-8">
+                <div className="w-full">
+                  <div className="mb-2 flex items-center justify-between text-[9px] text-[#777773]">
+                    <span>Cost after intro ends</span>
+                    <span className="rounded bg-[#EAF7EE] px-1.5 py-0.5 font-semibold text-[#41A85F]">
+                      Save 60%
+                    </span>
+                  </div>
+                  <svg viewBox="0 0 200 48" className="w-full">
+                    <polyline
+                      points="0,34 30,30 60,36 90,22 120,26 150,14 180,18 200,8"
+                      fill="none"
+                      stroke="#3F83F8"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                    <polyline
+                      points="0,10 30,12 60,8 90,14 120,10 150,16 180,12 200,14"
+                      fill="none"
+                      stroke="#D2D0C8"
+                      strokeWidth="2"
+                      strokeDasharray="4 4"
+                    />
+                  </svg>
+                </div>
+              </BentoVisual>
+              <BentoCopy
+                title="Real savings, quantified"
+                body="Intro price, renewal cost, and savings % side by side on every offer."
+              />
+            </div>
+            {/* Budget */}
+            <div className="rounded-2xl border border-[#E5E3DC] bg-white">
+              <BentoVisual className="items-center justify-center px-8">
+                <div className="w-full">
+                  <div className="h-1.5 w-full rounded-full bg-[#F1F0EB]">
+                    <div className="h-full w-2/5 rounded-full bg-[#3F83F8]" />
+                  </div>
+                  <div className="mt-2 flex justify-between text-[9px] font-medium text-[#777773]">
+                    <span>$0</span>
+                    <span className="rounded-full bg-[#1D1D1F] px-2 py-0.5 text-white">
+                      $40/mo
+                    </span>
+                    <span>$100+</span>
+                  </div>
+                </div>
+              </BentoVisual>
+              <BentoCopy
+                title="Budget-aware filtering"
+                body="Cap your monthly spend and only see offers that fit under it."
+              />
+            </div>
+            {/* Scout */}
+            <div className="rounded-2xl border border-[#E5E3DC] bg-white">
+              <BentoVisual className="items-end justify-center px-5 pb-4">
+                <div className="w-full">
+                  <div className="ml-auto w-fit max-w-[85%] rounded-xl rounded-br-sm bg-[#3F83F8] px-3 py-2 text-[9px] font-medium text-white">
+                    Cheapest coding setup under $30/mo?
+                  </div>
+                  <div className="mt-1.5 w-fit max-w-[85%] rounded-xl rounded-bl-sm border border-[#E5E3DC] bg-white px-3 py-2 text-[9px] text-[#55534D]">
+                    Cursor student Pro + Codex via ChatGPT Go — $8/mo total.
+                  </div>
+                </div>
+              </BentoVisual>
+              <BentoCopy
+                title="Scout answers from live offers"
+                body="Ask what fits your workflow — Scout grounds every answer in current deals."
+              />
+            </div>
+            {/* Hourly scans */}
+            <div className="rounded-2xl border border-[#E5E3DC] bg-white">
+              <BentoVisual className="items-center justify-center">
+                <div className="flex items-center gap-3">
+                  <span className="relative flex size-11 items-center justify-center rounded-full border border-[#E5E3DC] bg-white shadow-sm">
+                    <Radar className="size-5 text-[#3F83F8]" />
+                    <span className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-[#41A85F] ring-2 ring-white" />
+                  </span>
+                  <div className="text-left">
+                    <p className="text-[10px] font-semibold text-[#1D1D1F]">
+                      Scanning pricing pages
+                    </p>
+                    <p className="text-[9px] text-[#777773]">every hour, via Firecrawl</p>
+                  </div>
+                </div>
+              </BentoVisual>
+              <BentoCopy
+                title="Fresh scans on a schedule"
+                body="Vendor pricing pages are re-checked hourly — stale deals get retired automatically."
+              />
+            </div>
           </div>
         </section>
       </main>
@@ -227,6 +343,31 @@ export default function Home() {
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function BentoVisual({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`flex h-44 overflow-hidden rounded-t-2xl border-b border-[#E5E3DC] bg-[#F8F7F3] bg-[linear-gradient(#EDEBE4_1px,transparent_1px),linear-gradient(90deg,#EDEBE4_1px,transparent_1px)] bg-[size:22px_22px] ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function BentoCopy({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="p-5">
+      <h3 className="text-sm font-semibold">{title}</h3>
+      <p className="mt-1.5 text-sm leading-6 text-[#777773]">{body}</p>
     </div>
   );
 }

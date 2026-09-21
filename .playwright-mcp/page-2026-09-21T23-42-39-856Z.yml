@@ -1,0 +1,271 @@
+- generic [active] [ref=f9e1]:
+  - generic [ref=f9e2]:
+    - banner [ref=f9e3]:
+      - generic [ref=f9e4]:
+        - generic [ref=f9e5]:
+          - link "Scrivo" [ref=f9e6] [cursor=pointer]:
+            - /url: /
+          - navigation [ref=f9e8]:
+            - link "Explore deals" [ref=f9e9] [cursor=pointer]:
+              - /url: "#deals"
+            - link "Categories" [ref=f9e10] [cursor=pointer]:
+              - /url: "#categories"
+        - link "Start comparing" [ref=f9e12] [cursor=pointer]:
+          - /url: /deals
+    - main [ref=f9e13]:
+      - generic [ref=f9e20]:
+        - generic [ref=f9e21]:
+          - generic [ref=f9e22]:
+            - heading "Discover the best deals for your most used AI subscriptions." [level=1] [ref=f9e24]
+            - paragraph [ref=f9e26]: Scrivo monitors AI subscription pricing pages and emails you the moment a better offer, trial, or bundle goes live.
+            - generic [ref=f9e28]:
+              - link "Start comparing" [ref=f9e29] [cursor=pointer]:
+                - /url: /onboarding
+              - link "Explore deals" [ref=f9e30] [cursor=pointer]:
+                - /url: "#deals"
+            - generic [ref=f9e31]: Email digests + instant alerts
+          - generic [ref=f9e44]:
+            - generic [ref=f9e45]: 8:41
+            - generic [ref=f9e50]: Inbox
+            - generic [ref=f9e57]:
+              - generic [ref=f9e58]:
+                - generic [ref=f9e63]:
+                  - paragraph [ref=f9e64]: Scrivo Alerts
+                  - paragraph [ref=f9e65]: alerts@scrivo.app · via AgentMail
+                - generic [ref=f9e66]: 8:00 AM
+              - paragraph [ref=f9e67]: 4 new AI deals match your watchlist
+              - paragraph [ref=f9e68]: Coding deals under $20/mo · Daily digest
+              - generic [ref=f9e69]:
+                - generic [ref=f9e70]:
+                  - img "Claude Pro logo" [ref=f9e71]
+                  - generic [ref=f9e72]:
+                    - paragraph [ref=f9e73]: Claude Pro
+                    - paragraph [ref=f9e74]: 20% off annual
+                  - generic [ref=f9e75]: $17/mo
+                - generic [ref=f9e76]:
+                  - img "Devin logo" [ref=f9e77]
+                  - generic [ref=f9e78]:
+                    - paragraph [ref=f9e79]: Devin
+                    - paragraph [ref=f9e80]: Free trial extended
+                  - generic [ref=f9e81]: $15/mo
+                - generic [ref=f9e82]:
+                  - img "Cursor logo" [ref=f9e83]
+                  - generic [ref=f9e84]:
+                    - paragraph [ref=f9e85]: Cursor
+                    - paragraph [ref=f9e86]: Student discount
+                  - generic [ref=f9e87]: $16/mo
+                - generic [ref=f9e88]:
+                  - img "OpenAI Codex logo" [ref=f9e89]
+                  - generic [ref=f9e90]:
+                    - paragraph [ref=f9e91]: OpenAI Codex
+                    - paragraph [ref=f9e92]: Bundle with Plus
+                  - generic [ref=f9e93]: $10/mo
+              - generic [ref=f9e94]: View all deals
+        - generic [ref=f9e98]:
+          - text: Watching
+          - generic [ref=f9e100]:
+            - generic [ref=f9e101]:
+              - generic "Claude" [ref=f9e103]:
+                - img "Claude logo" [ref=f9e105]
+                - text: Claude
+              - generic "Devin" [ref=f9e107]:
+                - img "Devin logo" [ref=f9e109]
+                - text: Devin
+              - generic "Cursor" [ref=f9e111]:
+                - img "Cursor logo" [ref=f9e113]
+                - text: Cursor
+              - generic "ChatGPT" [ref=f9e115]:
+                - img "ChatGPT logo" [ref=f9e117]
+                - text: ChatGPT
+              - generic "Perplexity" [ref=f9e119]:
+                - img "Perplexity logo" [ref=f9e121]
+                - text: Perplexity
+              - generic "Midjourney" [ref=f9e123]:
+                - img "Midjourney logo" [ref=f9e125]
+                - text: Midjourney
+              - generic "Notion AI" [ref=f9e127]:
+                - img "Notion AI logo" [ref=f9e129]
+                - text: Notion AI
+              - generic "Gemini" [ref=f9e131]:
+                - img "Gemini logo" [ref=f9e133]
+                - text: Gemini
+              - generic "Runway" [ref=f9e135]:
+                - img "Runway logo" [ref=f9e137]
+                - text: Runway
+            - generic [aria-hidden] [ref=f9e138]:
+              - generic [ref=f9e139]: Claude
+              - generic [ref=f9e143]: Devin
+              - generic [ref=f9e147]: Cursor
+              - generic [ref=f9e151]: ChatGPT
+              - generic [ref=f9e155]: Perplexity
+              - generic [ref=f9e159]: Midjourney
+              - generic [ref=f9e163]: Notion AI
+              - generic [ref=f9e167]: Gemini
+              - generic [ref=f9e171]: Runway
+      - generic [ref=f9e176]:
+        - generic [ref=f9e177]:
+          - generic [ref=f9e178]:
+            - heading "Less tab-hopping. More value." [level=2] [ref=f9e179]
+            - generic [ref=f9e180]: 0 live offers
+          - generic [ref=f9e181]:
+            - complementary [ref=f9e182]:
+              - generic [ref=f9e183]:
+                - heading "Filter deals" [level=3] [ref=f9e184]
+                - button "Reset filters" [ref=f9e185]
+              - generic [ref=f9e186]:
+                - heading "Category" [level=4] [ref=f9e187]
+                - generic [ref=f9e188]:
+                  - generic [ref=f9e189]:
+                    - checkbox [ref=f9e190]
+                    - checkbox [aria-hidden] [ref=f9e194]
+                    - text: Writing
+                  - generic [ref=f9e195]:
+                    - checkbox [ref=f9e196]
+                    - checkbox [aria-hidden] [ref=f9e200]
+                    - text: Coding
+                  - generic [ref=f9e201]:
+                    - checkbox [ref=f9e202]
+                    - checkbox [aria-hidden] [ref=f9e206]
+                    - text: Design
+                  - generic [ref=f9e207]:
+                    - checkbox [ref=f9e208]
+                    - checkbox [aria-hidden] [ref=f9e212]
+                    - text: Research
+                  - generic [ref=f9e213]:
+                    - checkbox [ref=f9e214]
+                    - checkbox [aria-hidden] [ref=f9e218]
+                    - text: Video
+                  - generic [ref=f9e219]:
+                    - checkbox [ref=f9e220]
+                    - checkbox [aria-hidden] [ref=f9e224]
+                    - text: Productivity
+              - generic [ref=f9e225]:
+                - heading "Monthly budget" [level=4] [ref=f9e226]
+                - slider [ref=f9e227]: "100"
+                - generic [ref=f9e228]:
+                  - generic [ref=f9e229]: $0
+                  - generic [ref=f9e230]: $100+
+              - generic [ref=f9e231]:
+                - heading "Offer type" [level=4] [ref=f9e232]
+                - generic [ref=f9e233]:
+                  - generic [ref=f9e234]:
+                    - checkbox [ref=f9e235]
+                    - checkbox [aria-hidden] [ref=f9e239]
+                    - text: Free trial
+                  - generic [ref=f9e240]:
+                    - checkbox [ref=f9e241]
+                    - checkbox [aria-hidden] [ref=f9e245]
+                    - text: Discount
+                  - generic [ref=f9e246]:
+                    - checkbox [ref=f9e247]
+                    - checkbox [aria-hidden] [ref=f9e251]
+                    - text: Bundle
+                  - generic [ref=f9e252]:
+                    - checkbox [ref=f9e253]
+                    - checkbox [aria-hidden] [ref=f9e257]
+                    - text: Student offer
+            - generic [ref=f9e258]:
+              - generic [ref=f9e259]:
+                - textbox "Search tools or categories" [ref=f9e264]
+                - combobox [ref=f9e265]:
+                  - generic [ref=f9e266]: biggest-savings
+                  - img [aria-hidden]: ▼
+                - textbox [aria-hidden] [ref=f9e267]: biggest-savings
+              - generic [ref=f9e299]:
+                - paragraph [ref=f9e300]: No offers match these filters yet
+                - paragraph [ref=f9e301]: Scout checks vendor pages continuously — matches land here as they go live.
+        - generic [aria-hidden]:
+          - status: Saved — find it under Saved
+      - generic [ref=f9e302]:
+        - heading "The details that matter" [level=2] [ref=f9e303]
+        - generic [ref=f9e304]:
+          - generic [ref=f9e305]:
+            - generic [ref=f9e307]:
+              - paragraph [ref=f9e308]: 2 deals hit your watchlist
+              - generic [ref=f9e309]:
+                - img "Claude Pro logo" [ref=f9e310]
+                - generic [ref=f9e311]: Claude Pro
+                - generic [ref=f9e312]: $17/mo
+              - generic [ref=f9e313]:
+                - img "Cursor logo" [ref=f9e314]
+                - generic [ref=f9e315]: Cursor
+                - generic [ref=f9e316]: Free
+            - generic [ref=f9e317]:
+              - heading "Digests that only fire on matches" [level=3] [ref=f9e318]
+              - paragraph [ref=f9e319]: An email goes out the moment a deal matches your watchlist — never noise, never spam.
+          - generic [ref=f9e320]:
+            - generic [ref=f9e322]:
+              - img "claude logo" [ref=f9e324]
+              - img "chatgpt logo" [ref=f9e326]
+              - img "cursor logo" [ref=f9e328]
+              - img "devin logo" [ref=f9e330]
+              - img "perplexity logo" [ref=f9e332]
+              - img "gemini logo" [ref=f9e334]
+            - generic [ref=f9e335]:
+              - heading "Every major AI tool, watched" [level=3] [ref=f9e336]
+              - paragraph [ref=f9e337]: 12 vendors tracked across coding, writing, research, video, and design.
+          - generic [ref=f9e338]:
+            - generic [ref=f9e341]:
+              - generic [ref=f9e342]: Cost after intro ends
+              - generic [ref=f9e343]: Save 60%
+            - generic [ref=f9e347]:
+              - heading "Real savings, quantified" [level=3] [ref=f9e348]
+              - paragraph [ref=f9e349]: Intro price, renewal cost, and savings % side by side on every offer.
+          - generic [ref=f9e350]:
+            - generic [ref=f9e355]:
+              - generic [ref=f9e356]: $0
+              - generic [ref=f9e357]: $40/mo
+              - generic [ref=f9e358]: $100+
+            - generic [ref=f9e359]:
+              - heading "Budget-aware filtering" [level=3] [ref=f9e360]
+              - paragraph [ref=f9e361]: Cap your monthly spend and only see offers that fit under it.
+          - generic [ref=f9e362]:
+            - generic [ref=f9e364]:
+              - generic [ref=f9e365]: Cheapest coding setup under $30/mo?
+              - generic [ref=f9e366]: Cursor student Pro + Codex via ChatGPT Go — $8/mo total.
+            - generic [ref=f9e367]:
+              - heading "Scout answers from live offers" [level=3] [ref=f9e368]
+              - paragraph [ref=f9e369]: Ask what fits your workflow — Scout grounds every answer in current deals.
+          - generic [ref=f9e370]:
+            - generic [ref=f9e382]:
+              - paragraph [ref=f9e383]: Scanning pricing pages
+              - paragraph [ref=f9e384]: every hour, via Firecrawl
+            - generic [ref=f9e385]:
+              - heading "Fresh scans on a schedule" [level=3] [ref=f9e386]
+              - paragraph [ref=f9e387]: Vendor pricing pages are re-checked hourly — stale deals get retired automatically.
+    - contentinfo [ref=f9e388]:
+      - generic [ref=f9e389]:
+        - generic [ref=f9e390]:
+          - generic [ref=f9e391]: Scrivo.
+          - generic [ref=f9e393]:
+            - heading "Never overpay for an AI subscription again" [level=2] [ref=f9e394]
+            - generic [ref=f9e395]:
+              - link "Start comparing" [ref=f9e396] [cursor=pointer]:
+                - /url: /onboarding
+              - link "alerts@scrivo.app" [ref=f9e397] [cursor=pointer]:
+                - /url: mailto:alerts@scrivo.app
+            - generic [ref=f9e398]:
+              - generic [ref=f9e399]:
+                - paragraph [ref=f9e400]: Product
+                - generic [ref=f9e401]:
+                  - link "Explore deals" [ref=f9e402] [cursor=pointer]:
+                    - /url: /deals
+                  - link "Set an alert" [ref=f9e403] [cursor=pointer]:
+                    - /url: /alerts/new
+                  - link "Scout" [ref=f9e404] [cursor=pointer]:
+                    - /url: /scout
+              - generic [ref=f9e405]:
+                - paragraph [ref=f9e406]: Your account
+                - generic [ref=f9e407]:
+                  - link "Onboarding" [ref=f9e408] [cursor=pointer]:
+                    - /url: /onboarding
+                  - link "Automations" [ref=f9e409] [cursor=pointer]:
+                    - /url: /automations
+                  - link "Saved deals" [ref=f9e410] [cursor=pointer]:
+                    - /url: /saved
+        - generic [ref=f9e411]:
+          - generic [ref=f9e412]: All rights reserved. Scrivo 2026.
+          - generic [ref=f9e413]:
+            - generic [ref=f9e414]: Deals verified by Firecrawl
+            - generic [ref=f9e415]: Built on Convex
+  - button "Open Next.js Dev Tools" [ref=f9e421] [cursor=pointer]

@@ -7,8 +7,8 @@ import { HAS_CLERK } from "@/lib/clerk";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-4 z-50 mx-auto w-full max-w-[1180px] px-6 md:px-10">
-      <div className="flex h-14 items-center justify-between rounded-full bg-[#1D1D1F] pl-5 pr-2 shadow-lg shadow-black/10">
+    <header className="sticky top-4 z-50 mx-auto w-fit">
+      <div className="flex h-14 items-center gap-10 rounded-full bg-[#1D1D1F] pl-6 pr-2 shadow-lg shadow-black/10">
         <div className="flex items-center gap-9">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-lg font-semibold -tracking-[0.04em] text-white">
