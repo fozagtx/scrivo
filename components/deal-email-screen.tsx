@@ -1,4 +1,5 @@
 import { Tag, ChevronLeft, Inbox } from "lucide-react";
+import { ToolMark } from "@/components/tool-mark";
 
 /**
  * iOS-Mail-style screen shown inside the PhoneMockupCard on the landing page.
@@ -7,7 +8,7 @@ import { Tag, ChevronLeft, Inbox } from "lucide-react";
 export function DealEmailScreen({
   deals,
 }: {
-  deals: { name: string; offer: string; price: string }[];
+  deals: { slug: string; name: string; offer: string; price: string }[];
 }) {
   return (
     <div className="flex h-full w-full flex-col bg-[#F8F7F3] text-left">
@@ -54,9 +55,11 @@ export function DealEmailScreen({
               key={d.name}
               className="flex items-center gap-2 rounded-lg border border-[#E5E3DC] px-2.5 py-2"
             >
-              <span className="flex size-6 items-center justify-center rounded-md bg-[#F1F0EB] text-[9px] font-bold text-[#1D1D1F]">
-                {d.name.charAt(0)}
-              </span>
+              <ToolMark
+                slug={d.slug}
+                name={d.name}
+                className="size-6 rounded-md bg-[#F1F0EB] p-1 text-[9px]"
+              />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[10px] font-medium text-[#1D1D1F]">
                   {d.name}

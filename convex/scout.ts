@@ -23,7 +23,10 @@ export const send = action({
 
     const openai = createOpenAI({
       apiKey: process.env.OPENAI_API_KEY,
-      baseURL: process.env.OPENAI_BASE_URL, // optional — Azure/proxy compatible
+      // optional — Azure/proxy compatible; must be omitted (not undefined) when unset
+      ...(process.env.OPENAI_BASE_URL
+        ? { baseURL: process.env.OPENAI_BASE_URL }
+        : {}),
     });
     const model = openai(process.env.SCOUT_MODEL ?? "gpt-4o-mini");
 

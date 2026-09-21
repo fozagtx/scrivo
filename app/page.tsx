@@ -18,10 +18,10 @@ import { DealEmailScreen } from "@/components/deal-email-screen";
 import { DealExplorer } from "@/components/deal-explorer";
 
 const HERO_DEALS = [
-  { name: "Claude Pro", offer: "20% off annual", price: "$17/mo" },
-  { name: "Devin", offer: "Free trial extended", price: "$15/mo" },
-  { name: "Cursor", offer: "Student discount", price: "$16/mo" },
-  { name: "OpenAI Codex", offer: "Bundle with Plus", price: "$10/mo" },
+  { slug: "claude", name: "Claude Pro", offer: "20% off annual", price: "$17/mo" },
+  { slug: "devin", name: "Devin", offer: "Free trial extended", price: "$15/mo" },
+  { slug: "cursor", name: "Cursor", offer: "Student discount", price: "$16/mo" },
+  { slug: "codex", name: "OpenAI Codex", offer: "Bundle with Plus", price: "$10/mo" },
 ];
 
 const WATCHED_TOOLS = [
