@@ -200,6 +200,19 @@
   .t-marquee-track { animation: none !important; }
 }
 
+/* ── vertical offer ticker (bento card) ────────────────────────── */
+.t-ticker {
+  animation: t-ticker-scroll 22s linear infinite;
+}
+@keyframes t-ticker-scroll {
+  to {
+    transform: translateY(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-ticker { animation: none !important; }
+}
+
 /* ── 11 · avatar group hover ───────────────────────────────────── */
 .t-avatar {
   transform-origin: center;
