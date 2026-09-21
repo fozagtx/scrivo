@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, ChevronDown, Tag } from "lucide-react";
+import { Bell, ChevronDown } from "lucide-react";
 import { UserButton } from "@clerk/react";
 
 import { cn } from "@/lib/utils";
@@ -21,7 +21,6 @@ export function AppHeader() {
     <header className="flex h-[72px] w-full items-center justify-between border-b border-[#E5E3DC] bg-white px-8">
       <div className="flex items-center gap-10">
         <Link href="/" className="flex items-center gap-2" aria-label="Scrivo home">
-          <Tag className="size-5 text-[#3F83F8]" />
           <span className="text-base font-semibold -tracking-[0.02em] text-[#1D1D1F]">
             Scrivo
           </span>

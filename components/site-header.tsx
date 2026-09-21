@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Tag } from "lucide-react";
 import { Show, SignInButton } from "@clerk/react";
 
 import { HAS_CLERK } from "@/lib/clerk";
@@ -11,9 +10,6 @@ export function SiteHeader() {
     <header className="sticky top-4 z-50 mx-auto w-full max-w-[1180px] px-6 md:px-10">
       <div className="flex h-14 items-center justify-between rounded-full bg-[#1D1D1F] pl-5 pr-2 shadow-lg shadow-black/10">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex size-7 items-center justify-center rounded-lg bg-[#3F83F8]">
-            <Tag className="size-3.5 text-white" />
-          </div>
           <span className="text-lg font-semibold -tracking-[0.04em] text-white">
             Scrivo
           </span>
