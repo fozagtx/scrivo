@@ -216,6 +216,15 @@
 /* ── 14 · skeleton loader and reveal ─────────────────────────────
    Grid-stacked (not absolute) so the list height can grow.        */
 .t-skel { display: grid; }
+.t-skel[class*="overflow-y-auto"] {
+  scrollbar-width: thin;
+  scrollbar-color: #D2D0C8 transparent;
+}
+.t-skel[class*="overflow-y-auto"]::-webkit-scrollbar { width: 6px; }
+.t-skel[class*="overflow-y-auto"]::-webkit-scrollbar-thumb {
+  background: #D2D0C8;
+  border-radius: 999px;
+}
 .t-skel-skeleton,
 .t-skel-content {
   grid-area: 1 / 1;

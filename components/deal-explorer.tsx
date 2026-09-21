@@ -200,7 +200,7 @@ export function DealExplorer() {
             </div>
             <div
               className={cn(
-                "t-skel mt-6",
+                "t-skel mt-6 max-h-[430px] overflow-y-auto pr-1",
                 offers !== undefined && "is-revealed",
               )}
             >
