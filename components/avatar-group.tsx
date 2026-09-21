@@ -6,10 +6,11 @@ import { cn } from "@/lib/utils";
 export function AvatarGroup({
   items,
   className,
+  ...rest
 }: {
   items: ReactNode[];
   className?: string;
-}) {
+} & React.HTMLAttributes<HTMLDivElement>) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   const setShifts = (activeIdx: number | null, phase: "in" | "out") => {
@@ -55,6 +56,7 @@ export function AvatarGroup({
       ref={rootRef}
       className={cn("contents", className)}
       onMouseLeave={() => setShifts(null, "out")}
+      {...rest}
     >
       {items.map((node, i) => (
         <div

@@ -117,25 +117,33 @@ export default function Home() {
               </PhoneMockupCard>
             </div>
             </div>
-            <div className="mt-14 flex flex-wrap items-center gap-x-8 gap-y-4">
+            <div id="categories" className="mt-14 scroll-mt-24">
               <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#777773]">
                 Watching
               </span>
-              <AvatarGroup
-                className="flex flex-wrap items-center gap-x-8 gap-y-4"
-                items={WATCHED_TOOLS.map((t) => (
-                  <span
-                    key={t.name}
-                    className="flex items-center gap-2 text-sm text-[#55534D]"
-                    title={t.name}
-                  >
-                    <span className="flex size-9 items-center justify-center rounded-full border border-[#E5E3DC] bg-white text-sm font-semibold text-[#1D1D1F]">
-                      <ToolMark slug={t.slug} name={t.name} className="size-4" />
-                    </span>
-                    {t.name}
-                  </span>
-                ))}
-              />
+              <div className="t-marquee mt-4 overflow-hidden">
+                <div className="t-marquee-track flex w-max items-center">
+                  {[0, 1].map((copy) => (
+                    <AvatarGroup
+                      key={copy}
+                      aria-hidden={copy === 1}
+                      className="flex items-center gap-8 pr-8"
+                      items={WATCHED_TOOLS.map((t) => (
+                        <span
+                          key={t.name}
+                          className="flex items-center gap-2 text-sm text-[#55534D]"
+                          title={t.name}
+                        >
+                          <span className="flex size-9 items-center justify-center rounded-full border border-[#E5E3DC] bg-white text-sm font-semibold text-[#1D1D1F]">
+                            <ToolMark slug={t.slug} name={t.name} className="size-4" />
+                          </span>
+                          {t.name}
+                        </span>
+                      ))}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
         </BackgroundSwitcher>
