@@ -73,8 +73,8 @@ export default function Home() {
               <RevealLine>
                 <h1 className="max-w-2xl text-[44px] font-medium leading-[0.98] -tracking-[0.06em] md:text-[72px]">
                   Discover the{" "}
-                  <span className="text-[#3F83F8]">best AI subscription deals</span>{" "}
-                  for your budget before you subscribe.
+                  <span className="text-[#3F83F8]">best deals</span>{" "}
+                  for your most used AI subscriptions.
                 </h1>
               </RevealLine>
               <RevealLine index={1}>
