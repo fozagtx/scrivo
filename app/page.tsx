@@ -148,7 +148,7 @@ export default function Home() {
           </section>
         </BackgroundSwitcher>
 
-        <div className="px-6 pt-16 md:px-10">
+        <div id="deals" className="scroll-mt-24 px-6 pt-16 md:px-10">
           <DealExplorer />
         </div>
 
