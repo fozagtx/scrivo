@@ -40,3 +40,4 @@ next-env.d.ts
 # tool configs (local only)
 /.cursor/
 /.devin/
+.playwright-mcp/
