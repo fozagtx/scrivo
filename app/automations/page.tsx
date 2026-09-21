@@ -222,7 +222,7 @@ function MatchesPanel({ alertId }: { alertId: Id<"alerts"> }) {
           <p className="text-sm text-[#777773]">Loading…</p>
         ) : matches.length === 0 ? (
           <p className="text-sm text-[#777773]">
-            No matches yet — Scout will list them here.
+            No matches yet. Scout will list them here.
           </p>
         ) : (
           matches.map(

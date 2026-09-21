@@ -193,7 +193,7 @@ export default function Home() {
               </div>
               <BentoCopy
                 title="Your inbox is the deal feed"
-                body="Matched offers land as a digest you can act on — every row links straight to the offer."
+                body="Matched offers land as a digest you can act on. Every row links straight to the offer."
               />
             </div>
             {/* Live offer ticker — tall */}
@@ -236,7 +236,7 @@ export default function Home() {
               </div>
               <BentoCopy
                 title="Every offer, as we find it"
-                body="Vendor pricing pages get re-scanned hourly — new deals land in the feed the moment they go live."
+                body="Vendor pricing pages get re-scanned hourly. New deals land in the feed the moment they go live."
               />
             </div>
             {/* Price drop */}
@@ -259,7 +259,7 @@ export default function Home() {
               </div>
               <BentoCopy
                 title="Watch the price drop"
-                body="List price vs. the deal price, side by side — intro offer, annual billing, student rate."
+                body="List price vs. the deal price, side by side. Intro offer, annual billing, student rate."
               />
             </div>
             {/* Renewal reminder */}
@@ -280,7 +280,7 @@ export default function Home() {
               </div>
               <BentoCopy
                 title="Reminders before you get billed"
-                body="Trial ending, renewal coming, price changing — Scrivo pings you first."
+                body="Trial ending, renewal coming, price changing. Scrivo pings you first."
               />
             </div>
           </div>

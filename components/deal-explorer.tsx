@@ -230,7 +230,7 @@ export function DealExplorer() {
                     No offers match these filters yet
                   </p>
                   <p className="mt-1 text-sm text-[#777773]">
-                    Scout checks vendor pages continuously — matches land here
+                    Scout checks vendor pages continuously. Matches land here
                     as they go live.
                   </p>
                 </div>
@@ -299,7 +299,7 @@ export function DealExplorer() {
           </div>
         </div>
       </div>
-      <Toast open={toast}>Saved — find it under Saved</Toast>
+      <Toast open={toast}>Saved. Find it under Saved</Toast>
     </section>
   );
 }

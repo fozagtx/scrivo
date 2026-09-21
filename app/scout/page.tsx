@@ -180,8 +180,8 @@ export default function ScoutPage() {
                       />
                       <div className="flex flex-col gap-3">
                         <MessageContent className="bg-transparent p-0 text-sm leading-6 text-[#1D1D1F]">
-                          Tell me your budget and the kind of AI tools you use
-                          — I’ll compare live verified offers and find the best
+                          Tell me your budget and the kind of AI tools you use.
+                          I’ll compare live verified offers and find the best
                           value.
                         </MessageContent>
                         <div className="flex flex-wrap gap-2">
