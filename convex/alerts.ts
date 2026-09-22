@@ -1,4 +1,5 @@
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { resolveUser } from "./users";
 
@@ -28,12 +29,14 @@ export const create = mutation({
     const user = await resolveUser(ctx, args.guestId);
     if (!user) throw new Error("Identify yourself first");
     const { guestId: _guestId, ...fields } = args;
-    return await ctx.db.insert("alerts", {
+    const alertId = await ctx.db.insert("alerts", {
       ...fields,
       userId: user._id,
       status: "active",
       createdAt: Date.now(),
     });
+    await ctx.scheduler.runAfter(0, internal.mailer.sendWelcome, { alertId });
+    return alertId;
   },
 });
 
@@ -61,6 +64,20 @@ export const setStatus = mutation({
     if (!user || !alert || alert.userId !== user._id)
       throw new Error("Not found");
     await ctx.db.patch(args.id, { status: args.status });
+  },
+});
+
+export const resendWelcome = mutation({
+  args: { id: v.id("alerts"), guestId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const user = await resolveUser(ctx, args.guestId);
+    const alert = await ctx.db.get(args.id);
+    if (!user || !alert || alert.userId !== user._id)
+      throw new Error("Not found");
+    await ctx.db.patch(args.id, { welcomeError: undefined });
+    await ctx.scheduler.runAfter(0, internal.mailer.sendWelcome, {
+      alertId: args.id,
+    });
   },
 });
 

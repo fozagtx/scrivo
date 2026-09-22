@@ -203,6 +203,79 @@ export const dueDigests = internalQuery({
   },
 });
 
+/** Sample deals for the welcome email, ranked by relevance to the alert. */
+export const welcomeSample = internalQuery({
+  args: { alertId: v.id("alerts") },
+  handler: async (ctx, args) => {
+    const alert = await ctx.db.get(args.alertId);
+    if (!alert) return null;
+    const tools = new Map(
+      (await ctx.db.query("tools").collect()).map((t) => [t._id, t]),
+    );
+    const offers = (await ctx.db.query("offers").collect()).filter(
+      (o) => o.active,
+    );
+    const scored = offers.map((offer) => {
+      const tool = tools.get(offer.toolId);
+      let score = 0;
+      if (alert.toolIds.includes(offer.toolId)) score += 2;
+      if (tool && alert.categories.includes(tool.category)) score += 1;
+      const budgetOk =
+        offer.priceCents == null || offer.priceCents <= alert.budgetCents;
+      return { offer, tool, score, budgetOk };
+    });
+    const relevant = scored.filter((s) => s.score > 0);
+    let pool =
+      relevant.length && relevant.some((s) => s.budgetOk)
+        ? scored.filter((s) => s.budgetOk)
+        : scored;
+    if (!pool.length) pool = scored;
+    pool.sort(
+      (a, b) =>
+        b.score - a.score ||
+        (b.offer.savingsPct ?? 0) - (a.offer.savingsPct ?? 0),
+    );
+    // Up to 3 most relevant, then fill to 5 with the biggest real discounts
+    // in the catalog so the sample always shows actual savings.
+    const picked = pool.filter((s) => s.score > 0).slice(0, 3);
+    const bySavings = [...scored]
+      .filter((s) => (s.offer.savingsPct ?? 0) > 0 && !picked.includes(s))
+      .sort((a, b) => (b.offer.savingsPct ?? 0) - (a.offer.savingsPct ?? 0));
+    for (const s of [...bySavings, ...pool]) {
+      if (picked.length >= 5) break;
+      if (!picked.includes(s)) picked.push(s);
+    }
+    const items = picked.map(({ offer, tool }) => ({
+      name: tool?.name ?? "Unknown tool",
+      offer: offer.title,
+      price:
+        offer.priceCents != null
+          ? `$${(offer.priceCents / 100).toFixed(0)}/mo`
+          : "See site",
+      url: offer.url,
+      savings:
+        offer.savingsPct != null ? `Save ${offer.savingsPct}%` : null,
+    }));
+    return { alert, items };
+  },
+});
+
+export const markWelcomed = internalMutation({
+  args: { alertId: v.id("alerts"), error: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    if (args.error) {
+      await ctx.db.patch(args.alertId, { welcomeError: args.error });
+      return;
+    }
+    const now = Date.now();
+    await ctx.db.patch(args.alertId, {
+      welcomeSentAt: now,
+      lastDigestAt: now,
+      welcomeError: undefined,
+    });
+  },
+});
+
 export const markEmailed = internalMutation({
   args: { alertId: v.id("alerts") },
   handler: async (ctx, args) => {

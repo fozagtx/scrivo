@@ -79,6 +79,8 @@ export default defineSchema({
     status: v.union(v.literal("active"), v.literal("paused")),
     createdAt: v.number(),
     lastDigestAt: v.optional(v.number()),
+    welcomeSentAt: v.optional(v.number()),
+    welcomeError: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
     .index("by_status", ["status"]),

@@ -165,7 +165,9 @@ function AlertCard({
   const setStatus = useMutation(api.alerts.setStatus);
   const update = useMutation(api.alerts.update);
   const remove = useMutation(api.alerts.remove);
+  const resendWelcome = useMutation(api.alerts.resendWelcome);
 
+  const [resending, setResending] = useState(false);
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -372,9 +374,46 @@ function AlertCard({
         <div className="flex items-center gap-3">
           <Mail className="size-4 text-[#777773]" />
           <span className="text-sm font-medium">{alert.email}</span>
-          <span className="rounded-[8px] bg-[#DDF4E2] px-2 py-1 text-xs font-medium text-[#41A85F]">
-            Email connected
-          </span>
+          {alert.welcomeError ? (
+            <span
+              title={alert.welcomeError}
+              className="rounded-[8px] bg-[#FBEAE7] px-2 py-1 text-xs font-medium text-[#C96F5E]"
+            >
+              Email failed
+            </span>
+          ) : alert.welcomeSentAt ? (
+            <span className="rounded-[8px] bg-[#DDF4E2] px-2 py-1 text-xs font-medium text-[#41A85F]">
+              Email connected · test sent{" "}
+              {new Date(alert.welcomeSentAt).toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </span>
+          ) : (
+            <span className="rounded-[8px] bg-[#F1F0EB] px-2 py-1 text-xs font-medium text-[#777773]">
+              Sending test email…
+            </span>
+          )}
+          {(alert.welcomeSentAt || alert.welcomeError) && (
+            <button
+              type="button"
+              disabled={resending}
+              onClick={async () => {
+                setResending(true);
+                try {
+                  await resendWelcome({
+                    id: alert._id,
+                    guestId: guestId ?? undefined,
+                  });
+                } finally {
+                  setResending(false);
+                }
+              }}
+              className="text-xs font-medium text-[#3F83F8] hover:underline disabled:opacity-50"
+            >
+              {resending ? "Sending…" : "Resend test"}
+            </button>
+          )}
         </div>
         <span className="text-sm text-[#777773]">
           Next digest at {hourLabel(alert.digestHour)}
