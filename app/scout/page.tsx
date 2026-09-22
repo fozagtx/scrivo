@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
   ArrowUp,
@@ -83,6 +83,21 @@ export default function ScoutPage() {
     api.alerts.mine,
     guestId === null ? "skip" : { guestId },
   ) ?? [];
+
+  // The results pane mirrors what the chat is about — offers for tools
+  // mentioned in the thread first, then the biggest savings — kept short.
+  const panelOffers = useMemo(() => {
+    const text = (messages ?? [])
+      .map((m) => m.content.toLowerCase())
+      .join(" ");
+    const mentioned = (o: ListedOffer) =>
+      o.tool.name.length > 2 && text.includes(o.tool.name.toLowerCase());
+    const bySavings = (a: ListedOffer, b: ListedOffer) =>
+      (b.savingsPct ?? 0) - (a.savingsPct ?? 0);
+    const relevant = offers.filter(mentioned).sort(bySavings);
+    const rest = offers.filter((o) => !mentioned(o)).sort(bySavings);
+    return [...relevant, ...rest].slice(0, 7);
+  }, [offers, messages]);
 
   const submit = async (text?: string) => {
     const content = (text ?? input).trim();
@@ -294,7 +309,7 @@ export default function ScoutPage() {
               <div className="flex-1 overflow-y-auto">
                 {tab === "offers" ? (
                   <ul className="divide-y divide-[#EFEDE6]">
-                    {offers.map((o: ListedOffer) => (
+                    {panelOffers.map((o: ListedOffer) => (
                       <li key={o._id}>
                         <a
                           href={o.url}
