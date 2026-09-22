@@ -61,9 +61,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen flex-col bg-[#F8F7F3] font-sans text-[#1D1D1F] md:flex-row">
       <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-[#E5E3DC] bg-white px-4 md:hidden">
         <Link
-          href="/"
+          href="/deals"
           className="shrink-0 text-lg font-semibold -tracking-[0.04em] text-[#1D1D1F]"
-          aria-label="Scrivo home"
+          aria-label="Scrivo dashboard"
         >
           Scrivo
         </Link>
@@ -121,9 +121,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         ) : (
           <div className="flex items-center justify-between">
             <Link
-              href="/"
+              href="/deals"
               className="pl-0.5 text-lg font-semibold -tracking-[0.04em] text-[#1D1D1F]"
-              aria-label="Scrivo home"
+              aria-label="Scrivo dashboard"
             >
               Scrivo
             </Link>
