@@ -11,6 +11,7 @@ import { Reveal, RevealLine } from "@/components/reveal";
 import { AvatarGroup } from "@/components/avatar-group";
 import { DealEmailScreen } from "@/components/deal-email-screen";
 import { DealExplorer } from "@/components/deal-explorer";
+import { StartComparing } from "@/components/start-comparing";
 
 const HERO_DEALS = [
   { slug: "claude", name: "Claude Pro", offer: "20% off annual", price: "$17/mo" },
@@ -64,12 +65,7 @@ export default function Home() {
               </RevealLine>
               <RevealLine index={2}>
                 <div className="mt-8 flex items-center gap-3">
-                  <Link
-                    href="/onboarding"
-                    className="rounded-full bg-[#1D1D1F] px-6 py-3 text-sm font-semibold text-white transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-lg"
-                  >
-                    Start comparing
-                  </Link>
+                  <StartComparing className="px-7 py-3 text-sm" />
                   <a
                     href="#deals"
                     className="rounded-full border border-[#D2D0C8] bg-white px-6 py-3 text-sm font-semibold text-[#1D1D1F] transition-[transform,box-shadow] duration-150 hover:-translate-y-0.5 hover:shadow-md"
@@ -299,12 +295,7 @@ export default function Home() {
                 Never overpay for an AI subscription again
               </h2>
               <div className="mt-8 flex flex-wrap items-center gap-2">
-                <Link
-                  href="/onboarding"
-                  className="rounded-full bg-[#1D1D1F] px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition-transform hover:-translate-y-px"
-                >
-                  Start comparing
-                </Link>
+                <StartComparing className="px-5 py-2.5 text-xs uppercase tracking-wider" />
                 <a
                   href="mailto:alerts@scrivo.app"
                   className="rounded-full bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-[#1D1D1F] transition-transform hover:-translate-y-px"

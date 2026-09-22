@@ -4,7 +4,8 @@ import { useMutation, useQuery } from "convex/react";
 import { ExternalLink } from "lucide-react";
 
 import { api } from "@/convex/_generated/api";
-import { AppHeader } from "@/components/app-header";
+import { AppShell } from "@/components/app-shell";
+import { useGuestId } from "@/lib/guest";
 import type { ListedOffer } from "@/components/deal-explorer";
 import { ToolMark } from "@/components/tool-mark";
 import { SaveButton } from "@/components/save-button";
@@ -13,12 +14,15 @@ const fmt = (cents?: number | null) =>
   cents == null ? "—" : `$${(cents / 100).toFixed(cents % 100 ? 2 : 0)}/mo`;
 
 export default function SavedPage() {
-  const saved = useQuery(api.offers.saved);
+  const guestId = useGuestId();
+  const saved = useQuery(
+    api.offers.saved,
+    guestId === null ? "skip" : { guestId },
+  );
   const unsave = useMutation(api.offers.save);
 
   return (
-    <div className="min-h-screen bg-[#F8F7F3] font-sans text-[#1D1D1F]">
-      <AppHeader />
+    <AppShell>
       <main className="mx-auto flex w-full max-w-[1180px] flex-col gap-6 px-6 py-8 md:px-8">
         <h1 className="text-3xl font-medium -tracking-[0.06em]">Saved deals</h1>
         {saved === undefined ? (
@@ -81,7 +85,9 @@ export default function SavedPage() {
                   </a>
                   <SaveButton
                     saved
-                    onToggle={() => unsave({ offerId: o._id })}
+                    onToggle={() =>
+                      unsave({ offerId: o._id, guestId: guestId ?? undefined })
+                    }
                     className="rounded-full border border-[#E5E3DC] p-2 text-[#3F83F8]"
                   />
                 </div>
@@ -90,6 +96,6 @@ export default function SavedPage() {
           </div>
         )}
       </main>
-    </div>
+    </AppShell>
   );
 }

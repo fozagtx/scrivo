@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useGuestId } from "@/lib/guest";
 
 const CATEGORIES = [
   "Writing",
@@ -312,6 +313,7 @@ function SaveDealButton({
   onSaved: () => void;
 }) {
   const save = useMutation(api.offers.save);
+  const guestId = useGuestId();
   const [saved, setSaved] = useState(false);
   return (
     <SaveButton
@@ -319,7 +321,10 @@ function SaveDealButton({
       className="rounded-full border border-[#E5E3DC] p-2 text-[#777773] transition-colors hover:text-[#3F83F8]"
       onToggle={async () => {
         try {
-          const now = await save({ offerId });
+          const now = await save({
+            offerId,
+            guestId: guestId ?? undefined,
+          });
           setSaved(now);
           if (now) onSaved();
         } catch {

@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMutation, useQuery } from "convex/react";
-import { useConvexAuth } from "convex/react";
 
 import { api } from "@/convex/_generated/api";
 import { AppHeader } from "@/components/app-header";
 import { Reveal, RevealLine } from "@/components/reveal";
+import { CandyButton } from "@/components/ui/candy-button";
+import { useGuestId } from "@/lib/guest";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
@@ -22,15 +23,21 @@ const CATEGORIES = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { isAuthenticated } = useConvexAuth();
-  const me = useQuery(api.users.me);
+  const guestId = useGuestId();
+  const me = useQuery(
+    api.users.me,
+    guestId === null ? "skip" : { guestId },
+  );
+  const identify = useMutation(api.users.identify);
   const upsert = useMutation(api.profiles.upsert);
 
+  const [name, setName] = useState("");
   const [categories, setCategories] = useState<string[]>(["Coding"]);
   const [budget, setBudget] = useState(40);
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const resolvedName = name || me?.name || "";
   const resolvedEmail = email || me?.email || "";
 
   const toggle = (c: string) =>
@@ -39,13 +46,16 @@ export default function OnboardingPage() {
     );
 
   const submit = async () => {
-    if (!isAuthenticated) {
-      router.push("/alerts/new");
-      return;
-    }
+    if (!resolvedEmail) return;
     setSaving(true);
     try {
+      await identify({
+        guestId: guestId ?? undefined,
+        name: resolvedName || "Friend",
+        email: resolvedEmail,
+      });
       await upsert({
+        guestId: guestId ?? undefined,
         categories,
         monthlyBudgetCents: budget * 100,
         alertEmail: resolvedEmail,
@@ -87,6 +97,35 @@ export default function OnboardingPage() {
                   Your deal profile
                 </h2>
                 <div className="flex flex-col gap-8">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="flex flex-col gap-2">
+                      <label htmlFor="name" className="text-sm font-semibold">
+                        What should we call you?
+                      </label>
+                      <input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder={me?.name || "Your name"}
+                        className="h-10 rounded-[8px] border border-[#E5E3DC] bg-white px-3 text-sm outline-hidden focus:ring-2 focus:ring-[#3F83F8]"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label htmlFor="email" className="text-sm font-semibold">
+                        Deal alerts go to
+                      </label>
+                      <input
+                        id="email"
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder={resolvedEmail || "you@example.com"}
+                        className="h-10 rounded-[8px] border border-[#E5E3DC] bg-white px-3 text-sm outline-hidden focus:ring-2 focus:ring-[#3F83F8]"
+                      />
+                    </div>
+                  </div>
                   <div className="flex flex-col gap-3">
                     <p className="text-sm font-semibold">Categories</p>
                     <div className="flex flex-wrap gap-2">
@@ -129,22 +168,10 @@ export default function OnboardingPage() {
                       <span>$100+</span>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="email" className="text-sm font-semibold">
-                      Email
-                    </label>
-                    <input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder={resolvedEmail || "you@example.com"}
-                      className="h-10 rounded-[8px] border border-[#E5E3DC] bg-white px-3 text-sm outline-hidden focus:ring-2 focus:ring-[#3F83F8]"
-                    />
-                    <p className="text-xs text-[#777773]">
-                      Your alerts will be sent here.
-                    </p>
-                  </div>
+                  <p className="-mt-4 text-xs text-[#777773]">
+                    Your name and email are saved to your profile. Digests only
+                    go to the address above.
+                  </p>
                 </div>
                 <div className="flex items-center justify-between border-t border-[#E5E3DC] pt-6">
                   <Link
@@ -153,14 +180,14 @@ export default function OnboardingPage() {
                   >
                     Skip for now
                   </Link>
-                  <button
+                  <CandyButton
                     type="button"
                     onClick={submit}
-                    disabled={saving}
-                    className="rounded-[8px] bg-[#3F83F8] px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+                    disabled={saving || !resolvedEmail}
+                    className="rounded-full px-6 py-2.5 text-sm disabled:opacity-50"
                   >
                     {saving ? "Saving…" : "Continue"}
-                  </button>
+                  </CandyButton>
                 </div>
               </div>
             </div>

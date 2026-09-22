@@ -1,21 +1,25 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import {
   CircleCheck,
   Mail,
-  MoreHorizontal,
+  Pencil,
   Plus,
+  Trash2,
 } from "lucide-react";
 
 import { api } from "@/convex/_generated/api";
 import { ToolMark } from "@/components/tool-mark";
 import { Toggle } from "@/components/ui/toggle";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
-import { AppHeader } from "@/components/app-header";
+import { AppShell } from "@/components/app-shell";
+import { CandyButton } from "@/components/ui/candy-button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useGuestId } from "@/lib/guest";
 
 const fmt = (cents?: number | null) =>
   cents == null ? "—" : `$${(cents / 100).toFixed(cents % 100 ? 2 : 0)}/mo`;
@@ -25,6 +29,11 @@ const CADENCE_LABEL: Record<string, string> = {
   twice_daily: "twice daily",
   daily: "daily",
 };
+
+const HOURS = [6, 7, 8, 9, 12, 17, 18, 20];
+
+const hourLabel = (h: number) =>
+  h === 12 ? "12:00 PM" : h < 12 ? `${h}:00 AM` : `${h - 12}:00 PM`;
 
 export default function AutomationsPage() {
   return (
@@ -38,13 +47,15 @@ function AutomationsContent() {
   const params = useSearchParams();
   const justCreated = params.get("created") === "1";
 
-  const alerts = useQuery(api.alerts.mine);
+  const guestId = useGuestId();
+  const alerts = useQuery(
+    api.alerts.mine,
+    guestId === null ? "skip" : { guestId },
+  );
   const lastScan = useQuery(api.alerts.lastScan);
-  const setStatus = useMutation(api.alerts.setStatus);
 
   return (
-    <div className="min-h-screen bg-[#F8F7F3] font-sans text-[#1D1D1F]">
-      <AppHeader />
+    <AppShell>
       <main className="mx-auto flex w-full max-w-[1180px] flex-col gap-6 px-6 py-8 md:px-8">
         {justCreated && (
           <div className="flex items-center gap-3 rounded-[8px] border border-[#3F83F8]/20 bg-[#3F83F8]/5 px-4 py-3">
@@ -62,12 +73,11 @@ function AutomationsContent() {
           <h1 className="text-3xl font-medium -tracking-[0.06em]">
             Automations
           </h1>
-          <Link
-            href="/alerts/new"
-            className="flex items-center gap-2 rounded-[8px] bg-[#3F83F8] px-4 py-2 text-sm font-medium text-white"
-          >
-            <Plus className="size-4" />
-            New alert
+          <Link href="/alerts/new">
+            <CandyButton className="flex items-center gap-2 rounded-full px-5 py-2 text-sm">
+              <Plus className="size-4" />
+              New alert
+            </CandyButton>
           </Link>
         </div>
 
@@ -90,16 +100,7 @@ function AutomationsContent() {
           </div>
         ) : (
           alerts.map((a: Doc<"alerts">) => (
-            <AlertCard
-              key={a._id}
-              alert={a}
-              onToggle={() =>
-                setStatus({
-                  id: a._id,
-                  status: a.status === "active" ? "paused" : "active",
-                })
-              }
-            />
+            <AlertCard key={a._id} alert={a} guestId={guestId} />
           ))
         )}
 
@@ -132,32 +133,55 @@ function AutomationsContent() {
           </div>
         )}
       </main>
-    </div>
+    </AppShell>
   );
 }
 
 function AlertCard({
   alert,
-  onToggle,
+  guestId,
 }: {
-  alert: {
-    _id: Id<"alerts">;
-    name: string;
-    status: string;
-    toolIds: Id<"tools">[];
-    cadence: string;
-    digestHour: number;
-    thresholdPct: number;
-    email: string;
-  };
-  onToggle: () => void;
+  alert: Doc<"alerts">;
+  guestId: string | null;
 }) {
-  const hourLabel =
-    alert.digestHour === 12
-      ? "12:00 PM"
-      : alert.digestHour < 12
-        ? `${alert.digestHour}:00 AM`
-        : `${alert.digestHour - 12}:00 PM`;
+  const setStatus = useMutation(api.alerts.setStatus);
+  const update = useMutation(api.alerts.update);
+  const remove = useMutation(api.alerts.remove);
+
+  const [editing, setEditing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [draft, setDraft] = useState({
+    name: alert.name,
+    email: alert.email,
+    cadence: alert.cadence,
+    digestHour: alert.digestHour,
+    budget: Math.round(alert.budgetCents / 100),
+    immediateEnabled: alert.immediateEnabled,
+    thresholdPct: alert.thresholdPct,
+    thresholdCents: alert.thresholdCents,
+  });
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await update({
+        id: alert._id,
+        guestId: guestId ?? undefined,
+        name: draft.name,
+        email: draft.email,
+        cadence: draft.cadence,
+        digestHour: draft.digestHour,
+        budgetCents: draft.budget * 100,
+        immediateEnabled: draft.immediateEnabled,
+        thresholdPct: draft.thresholdPct,
+        thresholdCents: draft.thresholdCents,
+      });
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <section className="rounded-[14px] border border-[#E5E3DC] bg-white p-6">
@@ -169,31 +193,163 @@ function AlertCard({
             </h2>
             <Toggle
               on={alert.status === "active"}
-              onChange={onToggle}
+              onChange={() =>
+                setStatus({
+                  id: alert._id,
+                  guestId: guestId ?? undefined,
+                  status: alert.status === "active" ? "paused" : "active",
+                })
+              }
               label={alert.status === "active" ? "Pause alert" : "Resume alert"}
             />
           </div>
           <p className="text-sm text-[#777773]">
             {alert.toolIds.length} tools monitored · {CADENCE_LABEL[alert.cadence] ?? alert.cadence} digest at{" "}
-            {hourLabel} · Instant alerts at {alert.thresholdPct}% savings
+            {hourLabel(alert.digestHour)} · Instant alerts at {alert.thresholdPct}% savings
           </p>
         </div>
         <div className="flex items-center gap-1">
-          <Link
-            href="/alerts/new"
-            className="rounded-md px-3 py-1.5 text-sm text-[#1D1D1F]"
-          >
-            Edit
-          </Link>
           <button
             type="button"
-            aria-label="More automation actions"
-            className="rounded-md p-2"
+            onClick={() => {
+              setConfirmDelete(false);
+              setEditing((v) => !v);
+            }}
+            aria-label="Edit automation"
+            className="rounded-md p-2 text-[#777773] transition-colors hover:bg-[#F1F0EB] hover:text-[#1D1D1F]"
           >
-            <MoreHorizontal className="size-4" />
+            <Pencil className="size-4" />
           </button>
+          {confirmDelete ? (
+            <span className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() =>
+                  remove({ id: alert._id, guestId: guestId ?? undefined })
+                }
+                className="rounded-md bg-[#C96F5E] px-3 py-1.5 text-xs font-semibold text-white"
+              >
+                Delete
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="rounded-md px-2 py-1.5 text-xs text-[#777773]"
+              >
+                Keep
+              </button>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              aria-label="Delete automation"
+              className="rounded-md p-2 text-[#777773] transition-colors hover:bg-[#FBEAE7] hover:text-[#C96F5E]"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          )}
         </div>
       </div>
+
+      {editing && (
+        <div className="mt-5 grid gap-4 rounded-[12px] border border-[#E5E3DC] bg-[#F8F7F3] p-5 sm:grid-cols-2">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold">Name</span>
+            <input
+              value={draft.name}
+              onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+              className="h-9 rounded-lg border border-[#E5E3DC] bg-white px-3 text-sm outline-hidden focus:ring-2 focus:ring-[#3F83F8]"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold">Send alerts to</span>
+            <input
+              type="email"
+              value={draft.email}
+              onChange={(e) => setDraft({ ...draft, email: e.target.value })}
+              className="h-9 rounded-lg border border-[#E5E3DC] bg-white px-3 text-sm outline-hidden focus:ring-2 focus:ring-[#3F83F8]"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold">Digest cadence</span>
+            <select
+              value={draft.cadence}
+              onChange={(e) =>
+                setDraft({
+                  ...draft,
+                  cadence: e.target.value as Doc<"alerts">["cadence"],
+                })
+              }
+              className="h-9 rounded-lg border border-[#E5E3DC] bg-white px-3 text-sm"
+            >
+              {Object.entries(CADENCE_LABEL).map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold">Send digest at</span>
+            <select
+              value={draft.digestHour}
+              onChange={(e) =>
+                setDraft({ ...draft, digestHour: Number(e.target.value) })
+              }
+              className="h-9 rounded-lg border border-[#E5E3DC] bg-white px-3 text-sm"
+            >
+              {HOURS.map((h) => (
+                <option key={h} value={h}>
+                  {hourLabel(h)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-semibold">
+              Monthly budget cap: ${draft.budget}
+            </span>
+            <input
+              type="range"
+              min={5}
+              max={100}
+              value={draft.budget}
+              onChange={(e) =>
+                setDraft({ ...draft, budget: Number(e.target.value) })
+              }
+              className="accent-[#3F83F8]"
+            />
+          </label>
+          <label className="flex items-center gap-2.5 self-end pb-1">
+            <Checkbox
+              checked={draft.immediateEnabled}
+              onCheckedChange={(v) =>
+                setDraft({ ...draft, immediateEnabled: v === true })
+              }
+            />
+            <span className="text-sm">Instant alerts at {draft.thresholdPct}%+ savings</span>
+          </label>
+          <div className="flex justify-end gap-2 sm:col-span-2">
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="rounded-full px-4 py-2 text-sm font-medium text-[#777773]"
+            >
+              Cancel
+            </button>
+            <CandyButton
+              type="button"
+              onClick={save}
+              disabled={saving || !draft.email}
+              className="rounded-full px-5 py-2 text-sm disabled:opacity-50"
+            >
+              {saving ? "Saving…" : "Save changes"}
+            </CandyButton>
+          </div>
+        </div>
+      )}
+
       <div className="mt-6 flex items-center justify-between border-t border-[#E5E3DC] pt-5">
         <div className="flex items-center gap-3">
           <Mail className="size-4 text-[#777773]" />
@@ -203,7 +359,7 @@ function AlertCard({
           </span>
         </div>
         <span className="text-sm text-[#777773]">
-          Next digest at {hourLabel}
+          Next digest at {hourLabel(alert.digestHour)}
         </span>
       </div>
     </section>

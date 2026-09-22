@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { currentUser } from "./users";
+import { resolveUser } from "./users";
 
 const cadence = v.union(
   v.literal("hourly"),
@@ -10,6 +10,7 @@ const cadence = v.union(
 
 export const create = mutation({
   args: {
+    guestId: v.optional(v.string()),
     name: v.string(),
     categories: v.array(v.string()),
     toolIds: v.array(v.id("tools")),
@@ -23,10 +24,11 @@ export const create = mutation({
     email: v.string(),
   },
   handler: async (ctx, args) => {
-    const user = await currentUser(ctx);
-    if (!user) throw new Error("Sign in required");
+    const user = await resolveUser(ctx, args.guestId);
+    if (!user) throw new Error("Identify yourself first");
+    const { guestId: _guestId, ...fields } = args;
     return await ctx.db.insert("alerts", {
-      ...args,
+      ...fields,
       userId: user._id,
       status: "active",
       createdAt: Date.now(),
@@ -35,9 +37,9 @@ export const create = mutation({
 });
 
 export const mine = query({
-  args: {},
-  handler: async (ctx) => {
-    const user = await currentUser(ctx);
+  args: { guestId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const user = await resolveUser(ctx, args.guestId);
     if (!user) return [];
     return await ctx.db
       .query("alerts")
@@ -49,10 +51,11 @@ export const mine = query({
 export const setStatus = mutation({
   args: {
     id: v.id("alerts"),
+    guestId: v.optional(v.string()),
     status: v.union(v.literal("active"), v.literal("paused")),
   },
   handler: async (ctx, args) => {
-    const user = await currentUser(ctx);
+    const user = await resolveUser(ctx, args.guestId);
     const alert = await ctx.db.get(args.id);
     if (!user || !alert || alert.userId !== user._id)
       throw new Error("Not found");
@@ -60,10 +63,33 @@ export const setStatus = mutation({
   },
 });
 
-export const remove = mutation({
-  args: { id: v.id("alerts") },
+export const update = mutation({
+  args: {
+    id: v.id("alerts"),
+    guestId: v.optional(v.string()),
+    name: v.string(),
+    email: v.string(),
+    cadence,
+    digestHour: v.number(),
+    budgetCents: v.number(),
+    immediateEnabled: v.boolean(),
+    thresholdPct: v.number(),
+    thresholdCents: v.number(),
+  },
   handler: async (ctx, args) => {
-    const user = await currentUser(ctx);
+    const user = await resolveUser(ctx, args.guestId);
+    const alert = await ctx.db.get(args.id);
+    if (!user || !alert || alert.userId !== user._id)
+      throw new Error("Not found");
+    const { id, guestId: _guestId, ...patch } = args;
+    await ctx.db.patch(id, patch);
+  },
+});
+
+export const remove = mutation({
+  args: { id: v.id("alerts"), guestId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const user = await resolveUser(ctx, args.guestId);
     const alert = await ctx.db.get(args.id);
     if (!user || !alert || alert.userId !== user._id)
       throw new Error("Not found");

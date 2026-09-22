@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery, useConvexAuth } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import {
   Check,
   ChevronRight,
@@ -14,9 +14,10 @@ import {
 import { api } from "@/convex/_generated/api";
 import { ToolMark } from "@/components/tool-mark";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
-import { AppHeader } from "@/components/app-header";
+import { AppShell } from "@/components/app-shell";
 import { Checkbox } from "@/components/ui/checkbox";
-import { HAS_CLERK } from "@/lib/clerk";
+import { CandyButton } from "@/components/ui/candy-button";
+import { useGuestId } from "@/lib/guest";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
@@ -40,12 +41,13 @@ const THRESHOLDS = [
   { label: "30% or $10/month", pct: 30, cents: 1000 },
 ];
 
-const fmt = (cents: number) => `$${Math.round(cents / 100)}`;
-
 export default function NewAlertPage() {
   const router = useRouter();
-  const { isAuthenticated } = useConvexAuth();
-  const me = useQuery(api.users.me);
+  const guestId = useGuestId();
+  const me = useQuery(
+    api.users.me,
+    guestId === null ? "skip" : { guestId },
+  );
   const tools = useQuery(api.tools.list) ?? [];
   const create = useMutation(api.alerts.create);
 
@@ -58,10 +60,10 @@ export default function NewAlertPage() {
   const [digestHour, setDigestHour] = useState(8);
   const [immediate, setImmediate] = useState(true);
   const [threshold, setThreshold] = useState(THRESHOLDS[1]);
-  const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const resolvedEmail = email || me?.email || "";
+  const resolvedEmail =
+    me?.profile?.alertEmail || me?.email || "";
   const timezone =
     Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
@@ -82,10 +84,11 @@ export default function NewAlertPage() {
     );
 
   const submit = async () => {
-    if (!isAuthenticated) return;
+    if (!resolvedEmail) return;
     setSaving(true);
     try {
       await create({
+        guestId: guestId ?? undefined,
         name,
         categories,
         toolIds,
@@ -105,8 +108,7 @@ export default function NewAlertPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F7F3] font-sans text-[#1D1D1F]">
-      <AppHeader />
+    <AppShell>
       <main className="mx-auto flex w-full max-w-[1180px] flex-col gap-8 px-6 py-12 md:px-8">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2 text-sm text-[#777773]">
@@ -194,26 +196,24 @@ export default function NewAlertPage() {
             </button>
           ) : (
             <div className="flex flex-col items-end gap-3">
-              <button
+              <CandyButton
                 type="button"
                 onClick={submit}
-                disabled={saving || !isAuthenticated}
-                className="rounded-lg bg-[#3F83F8] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+                disabled={saving || !resolvedEmail}
+                className="rounded-full px-6 py-2.5 text-sm disabled:opacity-50"
               >
                 {saving ? "Turning on…" : "Turn on alert"}
-              </button>
+              </CandyButton>
               <p className="text-xs text-[#777773]">
-                {isAuthenticated
-                  ? "By turning this on, you agree to receive Scrivo deal alerts."
-                  : HAS_CLERK
-                    ? "Sign in to activate this alert."
-                    : "Connect Clerk to enable alerts."}
+                {resolvedEmail
+                  ? `Digests go to ${resolvedEmail}.`
+                  : "Add your email on onboarding to activate alerts."}
               </p>
             </div>
           )}
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }
 

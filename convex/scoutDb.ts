@@ -1,13 +1,13 @@
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { currentUser } from "./users";
+import { resolveUser } from "./users";
 
 export const noop = internalMutation({ args: {}, handler: async () => null });
 
 export const threads = query({
-  args: {},
-  handler: async (ctx) => {
-    const user = await currentUser(ctx);
+  args: { guestId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const user = await resolveUser(ctx, args.guestId);
     if (!user) return [];
     const rows = await ctx.db
       .query("scoutThreads")
@@ -18,10 +18,10 @@ export const threads = query({
 });
 
 export const createThread = mutation({
-  args: { title: v.string() },
+  args: { title: v.string(), guestId: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const user = await currentUser(ctx);
-    if (!user) throw new Error("Sign in required");
+    const user = await resolveUser(ctx, args.guestId);
+    if (!user) throw new Error("Identify yourself first");
     const now = Date.now();
     return await ctx.db.insert("scoutThreads", {
       userId: user._id,
@@ -33,9 +33,9 @@ export const createThread = mutation({
 });
 
 export const messages = query({
-  args: { threadId: v.id("scoutThreads") },
+  args: { threadId: v.id("scoutThreads"), guestId: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const user = await currentUser(ctx);
+    const user = await resolveUser(ctx, args.guestId);
     const thread = await ctx.db.get(args.threadId);
     if (!user || !thread || thread.userId !== user._id) return [];
     return await ctx.db
@@ -46,9 +46,13 @@ export const messages = query({
 });
 
 export const postUser = mutation({
-  args: { threadId: v.id("scoutThreads"), content: v.string() },
+  args: {
+    threadId: v.id("scoutThreads"),
+    content: v.string(),
+    guestId: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
-    const user = await currentUser(ctx);
+    const user = await resolveUser(ctx, args.guestId);
     const thread = await ctx.db.get(args.threadId);
     if (!user || !thread || thread.userId !== user._id)
       throw new Error("Not found");

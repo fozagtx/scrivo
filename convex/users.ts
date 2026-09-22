@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
+import { v } from "convex/values";
 
 export async function currentUser(ctx: QueryCtx) {
   const identity = await ctx.auth.getUserIdentity();
@@ -8,6 +9,19 @@ export async function currentUser(ctx: QueryCtx) {
     .query("users")
     .withIndex("tokenIdentifier", (q) =>
       q.eq("tokenIdentifier", identity.tokenIdentifier),
+    )
+    .unique();
+}
+
+/** Clerk-authed user, else the browser's guest user (created via identify). */
+export async function resolveUser(ctx: QueryCtx, guestId?: string | null) {
+  const auth = await currentUser(ctx);
+  if (auth) return auth;
+  if (!guestId) return null;
+  return await ctx.db
+    .query("users")
+    .withIndex("tokenIdentifier", (q) =>
+      q.eq("tokenIdentifier", `guest:${guestId}`),
     )
     .unique();
 }
@@ -39,10 +53,49 @@ export const store = mutation({
   },
 });
 
+/**
+ * Captures name + email. Patches the Clerk user when signed in,
+ * otherwise upserts a guest user keyed by the browser's guest id.
+ */
+export const identify = mutation({
+  args: {
+    guestId: v.optional(v.string()),
+    name: v.string(),
+    email: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const auth = await currentUser(ctx);
+    if (auth) {
+      await ctx.db.patch(auth._id, { name: args.name, email: args.email });
+      return auth._id;
+    }
+    if (!args.guestId) throw new Error("Missing guest id");
+    const tokenIdentifier = `guest:${args.guestId}`;
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("tokenIdentifier", (q) =>
+        q.eq("tokenIdentifier", tokenIdentifier),
+      )
+      .unique();
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        name: args.name,
+        email: args.email,
+      });
+      return existing._id;
+    }
+    return await ctx.db.insert("users", {
+      tokenIdentifier,
+      name: args.name,
+      email: args.email,
+    });
+  },
+});
+
 export const me = query({
-  args: {},
-  handler: async (ctx) => {
-    const user = await currentUser(ctx);
+  args: { guestId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const user = await resolveUser(ctx, args.guestId);
     if (!user) return null;
     const profile = await ctx.db
       .query("profiles")

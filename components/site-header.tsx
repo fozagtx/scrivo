@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Show, SignInButton } from "@clerk/react";
 
 import { HAS_CLERK } from "@/lib/clerk";
+import { StartComparing } from "@/components/start-comparing";
 
 export function SiteHeader() {
   return (
@@ -25,14 +26,7 @@ export function SiteHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-4">
-          {!HAS_CLERK && (
-            <Link
-              href="/deals"
-              className="rounded-full bg-[#F8F7F3] px-5 py-2 text-sm font-semibold text-[#1D1D1F] transition-transform hover:-translate-y-px"
-            >
-              Start comparing
-            </Link>
-          )}
+          {!HAS_CLERK && <StartComparing className="px-5 py-2 text-sm" />}
           {HAS_CLERK && (
             <>
               <Show when="signed-out">

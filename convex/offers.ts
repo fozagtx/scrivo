@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { currentUser } from "./users";
+import { resolveUser } from "./users";
 
 export const list = query({
   args: {
@@ -58,10 +58,10 @@ export const count = query({
 });
 
 export const save = mutation({
-  args: { offerId: v.id("offers") },
+  args: { offerId: v.id("offers"), guestId: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const user = await currentUser(ctx);
-    if (!user) throw new Error("Sign in to save deals");
+    const user = await resolveUser(ctx, args.guestId);
+    if (!user) throw new Error("Identify yourself to save deals");
     const existing = await ctx.db
       .query("savedOffers")
       .withIndex("by_user_offer", (q) =>
@@ -259,9 +259,9 @@ export const seedOffers = mutation({
 });
 
 export const saved = query({
-  args: {},
-  handler: async (ctx) => {
-    const user = await currentUser(ctx);
+  args: { guestId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const user = await resolveUser(ctx, args.guestId);
     if (!user) return [];
     const rows = await ctx.db
       .query("savedOffers")

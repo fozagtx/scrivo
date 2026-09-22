@@ -8,7 +8,8 @@ import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import type { ListedOffer } from "@/components/deal-explorer";
 import { ToolMark } from "@/components/tool-mark";
-import { AppHeader } from "@/components/app-header";
+import { AppShell } from "@/components/app-shell";
+import { useGuestId } from "@/lib/guest";
 import {
   ChatContainerContent,
   ChatContainerRoot,
@@ -38,7 +39,11 @@ const SUGGESTIONS = [
 ];
 
 export default function ScoutPage() {
-  const threads = useQuery(api.scoutDb.threads);
+  const guestId = useGuestId();
+  const threads = useQuery(
+    api.scoutDb.threads,
+    guestId === null ? "skip" : { guestId },
+  );
   const createThread = useMutation(api.scoutDb.createThread);
   const postUser = useMutation(api.scoutDb.postUser);
   const send = useAction(api.scout.send);
@@ -50,7 +55,9 @@ export default function ScoutPage() {
 
   const messages = useQuery(
     api.scoutDb.messages,
-    threadId ? { threadId } : "skip",
+    threadId && guestId !== null
+      ? { threadId, guestId }
+      : "skip",
   );
 
   // Mark history as already-seen on thread load so only genuinely new
@@ -75,11 +82,12 @@ export default function ScoutPage() {
       if (!tid) {
         tid = await createThread({
           title: content.slice(0, 48),
+          guestId: guestId ?? undefined,
         });
         setThreadId(tid);
       }
       setInput("");
-      await postUser({ threadId: tid, content });
+      await postUser({ threadId: tid, content, guestId: guestId ?? undefined });
       await send({ threadId: tid, message: content });
     } catch (e) {
       setError(
@@ -95,9 +103,8 @@ export default function ScoutPage() {
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F8F7F3] font-sans text-[#1D1D1F]">
-      <AppHeader />
-      <main className="flex-1 px-6 py-9 md:px-12">
+    <AppShell>
+      <main className="px-6 py-9 md:px-12">
         <div className="mx-auto flex max-w-[1420px] flex-col gap-6">
           <div className="flex items-end justify-between">
             <div className="flex flex-col gap-2">
@@ -318,7 +325,7 @@ export default function ScoutPage() {
           </div>
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }
 
