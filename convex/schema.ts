@@ -68,6 +68,7 @@ export default defineSchema({
       v.literal("hourly"),
       v.literal("twice_daily"),
       v.literal("daily"),
+      v.literal("every_2_days"),
     ),
     digestHour: v.number(), // 0-23 local to timezone
     timezone: v.string(),

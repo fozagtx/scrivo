@@ -61,12 +61,16 @@ export const identify = mutation({
   args: {
     guestId: v.optional(v.string()),
     name: v.string(),
-    email: v.string(),
+    email: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const fields = {
+      name: args.name,
+      ...(args.email ? { email: args.email } : {}),
+    };
     const auth = await currentUser(ctx);
     if (auth) {
-      await ctx.db.patch(auth._id, { name: args.name, email: args.email });
+      await ctx.db.patch(auth._id, fields);
       return auth._id;
     }
     if (!args.guestId) throw new Error("Missing guest id");
@@ -78,16 +82,12 @@ export const identify = mutation({
       )
       .unique();
     if (existing) {
-      await ctx.db.patch(existing._id, {
-        name: args.name,
-        email: args.email,
-      });
+      await ctx.db.patch(existing._id, fields);
       return existing._id;
     }
     return await ctx.db.insert("users", {
       tokenIdentifier,
-      name: args.name,
-      email: args.email,
+      ...fields,
     });
   },
 });

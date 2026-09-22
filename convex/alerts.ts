@@ -6,6 +6,7 @@ const cadence = v.union(
   v.literal("hourly"),
   v.literal("twice_daily"),
   v.literal("daily"),
+  v.literal("every_2_days"),
 );
 
 export const create = mutation({

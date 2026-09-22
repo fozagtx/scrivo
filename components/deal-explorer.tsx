@@ -51,7 +51,7 @@ export type ListedOffer = {
   tool: { name: string; category: string; slug?: string; mark?: string };
 };
 
-export function DealExplorer() {
+export function DealExplorer({ className }: { className?: string }) {
   const [categories, setCategories] = useState<string[]>([]);
   const [offerTypes, setOfferTypes] = useState<string[]>([]);
   const [budget, setBudget] = useState(100);
@@ -97,7 +97,7 @@ export function DealExplorer() {
   };
 
   return (
-    <section id="deals" className="mx-auto w-full max-w-[1180px] pb-24">
+    <section className={cn("mx-auto w-full max-w-[1180px] pb-24", className)}>
       <div className="rounded-[22px] border border-[#E5E3DC] bg-white p-6">
         <div className="flex items-center justify-between border-b border-[#E5E3DC] pb-5">
           <h2 className="text-xl font-medium -tracking-[0.04em] text-[#1D1D1F]">

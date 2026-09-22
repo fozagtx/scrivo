@@ -12,6 +12,7 @@ import { AvatarGroup } from "@/components/avatar-group";
 import { DealEmailScreen } from "@/components/deal-email-screen";
 import { DealExplorer } from "@/components/deal-explorer";
 import { StartComparing } from "@/components/start-comparing";
+import RetroDither from "@/components/canvasui/RetroDither";
 
 const HERO_DEALS = [
   { slug: "claude", name: "Claude Pro", offer: "20% off annual", price: "$17/mo" },
@@ -125,7 +126,32 @@ export default function Home() {
         </BackgroundSwitcher>
 
         <div id="deals" className="scroll-mt-24 px-6 pt-16 md:px-10">
-          <DealExplorer />
+          <div className="relative mx-auto w-full max-w-[1180px]">
+            <RetroDither
+              className="overflow-hidden rounded-[28px] border border-[#E5E3DC]"
+              style={{ position: "absolute", inset: 0 }}
+              baseStrength={0.5}
+              strength={0.85}
+              colorize={0.15}
+              pixelSize={3}
+              darkColor={[0.11, 0.11, 0.12]}
+              lightColor={[0.97, 0.96, 0.95]}
+            >
+              <div className="relative h-full w-full overflow-hidden bg-[#F1F0EB]">
+                <div
+                  aria-hidden
+                  className="absolute -left-24 -top-24 size-80 rounded-full bg-[#3F83F8]/20 blur-3xl"
+                />
+                <div
+                  aria-hidden
+                  className="absolute -bottom-28 -right-16 size-96 rounded-full bg-[#2563D6]/15 blur-3xl"
+                />
+              </div>
+            </RetroDither>
+            <div className="relative p-4 md:p-6">
+              <DealExplorer className="max-w-none pb-0" />
+            </div>
+          </div>
         </div>
 
         <section className="mx-auto w-full max-w-[1180px] px-6 pb-24 md:px-10">

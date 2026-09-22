@@ -33,6 +33,7 @@ const CADENCES = [
   { value: "hourly", label: "Every hour" },
   { value: "twice_daily", label: "Twice a day" },
   { value: "daily", label: "Daily" },
+  { value: "every_2_days", label: "Every 2 days" },
 ] as const;
 
 const THRESHOLDS = [
@@ -50,6 +51,7 @@ export default function NewAlertPage() {
   );
   const tools = useQuery(api.tools.list) ?? [];
   const create = useMutation(api.alerts.create);
+  const identify = useMutation(api.users.identify);
 
   const [step, setStep] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
@@ -60,10 +62,11 @@ export default function NewAlertPage() {
   const [digestHour, setDigestHour] = useState(8);
   const [immediate, setImmediate] = useState(true);
   const [threshold, setThreshold] = useState(THRESHOLDS[1]);
+  const [emailOverride, setEmailOverride] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const resolvedEmail =
-    me?.profile?.alertEmail || me?.email || "";
+  const email = emailOverride ?? me?.profile?.alertEmail ?? me?.email ?? "";
+  const resolvedEmail = email.trim();
   const timezone =
     Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
@@ -87,6 +90,11 @@ export default function NewAlertPage() {
     if (!resolvedEmail) return;
     setSaving(true);
     try {
+      await identify({
+        guestId: guestId ?? undefined,
+        name: me?.name || "Friend",
+        email: resolvedEmail,
+      });
       await create({
         guestId: guestId ?? undefined,
         name,
@@ -159,7 +167,8 @@ export default function NewAlertPage() {
               setImmediate={setImmediate}
               threshold={threshold}
               setThreshold={setThreshold}
-              email={resolvedEmail}
+              email={email}
+              setEmail={setEmailOverride}
             />
           </div>
           <div className="t-page" data-page-id="3">
@@ -405,9 +414,10 @@ function StepSchedule({
   threshold,
   setThreshold,
   email,
+  setEmail,
 }: {
   cadence: string;
-  setCadence: (v: "hourly" | "twice_daily" | "daily") => void;
+  setCadence: (v: (typeof CADENCES)[number]["value"]) => void;
   digestHour: number;
   setDigestHour: (v: number) => void;
   timezone: string;
@@ -416,6 +426,7 @@ function StepSchedule({
   threshold: (typeof THRESHOLDS)[number];
   setThreshold: (v: (typeof THRESHOLDS)[number]) => void;
   email: string;
+  setEmail: (v: string) => void;
 }) {
   return (
     <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
@@ -427,7 +438,7 @@ function StepSchedule({
           <span className="text-[13px] font-semibold tracking-[0.02em]">
             Check for new deals
           </span>
-          <div className="grid h-11 grid-cols-3 rounded-[14px] border border-[#E5E3DC] bg-[#F1F0EB] p-1">
+          <div className="grid h-11 grid-cols-4 rounded-[14px] border border-[#E5E3DC] bg-[#F1F0EB] p-1">
             {CADENCES.map((c) => (
               <button
                 key={c.value}
@@ -443,6 +454,27 @@ function StepSchedule({
               </button>
             ))}
           </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor="alert-email"
+            className="text-[13px] font-semibold tracking-[0.02em]"
+          >
+            Send alerts to
+          </label>
+          <input
+            id="alert-email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className="h-10 rounded-[8px] border border-[#E5E3DC] bg-white px-3 text-sm outline-hidden focus:ring-2 focus:ring-[#3F83F8]"
+          />
+          <p className="text-xs text-[#777773]">
+            Digests and instant alerts go to this inbox. Each automation can
+            use a different address.
+          </p>
         </div>
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="flex flex-col gap-2">

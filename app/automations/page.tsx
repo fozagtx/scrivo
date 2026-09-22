@@ -28,6 +28,7 @@ const CADENCE_LABEL: Record<string, string> = {
   hourly: "hourly",
   twice_daily: "twice daily",
   daily: "daily",
+  every_2_days: "every 2 days",
 };
 
 const HOURS = [6, 7, 8, 9, 12, 17, 18, 20];

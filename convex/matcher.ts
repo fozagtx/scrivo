@@ -161,7 +161,13 @@ export const dueDigests = internalQuery({
     );
     const now = Date.now();
     const intervalMs = (c: string) =>
-      c === "hourly" ? 3_600_000 : c === "twice_daily" ? 43_200_000 : 86_400_000;
+      c === "hourly"
+        ? 3_600_000
+        : c === "twice_daily"
+          ? 43_200_000
+          : c === "every_2_days"
+            ? 172_800_000
+            : 86_400_000;
     const out: {
       alertId: Id<"alerts">;
       email: string;

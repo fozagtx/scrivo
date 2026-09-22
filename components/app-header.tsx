@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, ChevronDown } from "lucide-react";
+import { useQuery } from "convex/react";
+import { Bell, ChevronDown, User } from "lucide-react";
 import { UserButton } from "@clerk/react";
 
+import { api } from "@/convex/_generated/api";
 import { cn } from "@/lib/utils";
 import { HAS_CLERK } from "@/lib/clerk";
+import { useGuestId } from "@/lib/guest";
 
 const NAV = [
   { href: "/deals", label: "Deals" },
@@ -17,6 +20,11 @@ const NAV = [
 
 export function AppHeader() {
   const pathname = usePathname();
+  const guestId = useGuestId();
+  const me = useQuery(
+    api.users.me,
+    guestId === null ? "skip" : { guestId },
+  );
   return (
     <header className="flex h-[72px] w-full items-center justify-between border-b border-[#E5E3DC] bg-white px-8">
       <div className="flex items-center gap-10">
@@ -59,7 +67,11 @@ export function AppHeader() {
             />
           ) : (
             <span className="flex size-8 items-center justify-center rounded-full bg-[#3F83F8] text-xs font-semibold text-white">
-              S
+              {me?.name ? (
+                me.name.charAt(0).toUpperCase()
+              ) : (
+                <User className="size-4" />
+              )}
             </span>
           )}
           <ChevronDown className="size-4 text-[#777773]" />

@@ -48,8 +48,19 @@ const MIME_TYPES = {
   ".webmanifest": "application/manifest+json",
   ".xml": "application/xml",
 };
-const getMimeType = (p) =>
-  MIME_TYPES[extname(p).toLowerCase()] || "application/octet-stream";
+const getMimeType = (p) => {
+  const byExt = MIME_TYPES[extname(p).toLowerCase()];
+  if (byExt) return byExt;
+  // Next emits metadata routes (opengraph-image, twitter-image) extensionless.
+  try {
+    const head = readFileSync(p).subarray(0, 4);
+    if (head[0] === 0x89 && head[1] === 0x50) return "image/png";
+    if (head[0] === 0xff && head[1] === 0xd8) return "image/jpeg";
+  } catch {
+    /* unreadable */
+  }
+  return "application/octet-stream";
+};
 
 const convexBin = join(
   dirname(new URL(import.meta.url).pathname),

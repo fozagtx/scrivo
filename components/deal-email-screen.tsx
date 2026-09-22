@@ -50,10 +50,11 @@ export function DealEmailScreen({
           Coding deals under $20/mo · Daily digest
         </p>
         <div className="mt-2.5 flex flex-col gap-1.5">
-          {deals.map((d) => (
+          {deals.map((d, i) => (
             <div
               key={d.name}
-              className="flex items-center gap-2 rounded-lg border border-[#E5E3DC] px-2.5 py-2"
+              className="t-mail-row flex items-center gap-2 rounded-lg border border-[#E5E3DC] px-2.5 py-2"
+              style={{ ["--mail-delay" as string]: `${0.4 + i * 0.14}s` }}
             >
               <ToolMark
                 slug={d.slug}
@@ -66,13 +67,21 @@ export function DealEmailScreen({
                 </p>
                 <p className="truncate text-[8.5px] text-[#777773]">{d.offer}</p>
               </div>
+              {i === 0 && (
+                <span
+                  className="t-mail-badge rounded-full bg-[#3F83F8] px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide text-white"
+                  style={{ ["--mail-delay" as string]: "1.2s" }}
+                >
+                  New
+                </span>
+              )}
               <span className="text-[10px] font-semibold text-[#1D1D1F]">
                 {d.price}
               </span>
             </div>
           ))}
         </div>
-        <div className="mt-3 rounded-lg bg-[#1D1D1F] py-2 text-center text-[10px] font-semibold text-white">
+        <div className="t-mail-cta mt-3 rounded-lg bg-[#1D1D1F] py-2 text-center text-[10px] font-semibold text-white">
           View all deals
         </div>
       </div>
