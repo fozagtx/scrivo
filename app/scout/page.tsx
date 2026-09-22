@@ -24,9 +24,9 @@ import {
 } from "@/components/ui/chat-container";
 import {
   Message,
-  MessageAvatar,
   MessageContent,
 } from "@/components/ui/message";
+import { ScoutAvatar, ScoutMascot } from "@/components/scout-mascot";
 import { PromptSuggestion } from "@/components/ui/prompt-suggestion";
 import { TextShimmer } from "@/components/ui/text-shimmer";
 import { Loader } from "@/components/ui/loader";
@@ -186,33 +186,31 @@ export default function ScoutPage() {
               </div>
 
               <ChatContainerRoot className="min-h-0 flex-1">
-                <ChatContainerContent className="flex flex-col gap-5 px-5 py-5">
+                <ChatContainerContent className="flex min-h-full flex-col gap-5 px-5 py-5">
                   {(!messages || messages.length === 0) && (
-                    <Message className="max-w-[92%]">
-                      <MessageAvatar
-                        src=""
-                        alt="Scout"
-                        fallback="S"
-                        className="size-7 rounded-lg bg-[#EAF2FF] text-xs font-semibold text-[#3F83F8]"
-                      />
-                      <div className="flex flex-col gap-3">
-                        <MessageContent className="bg-transparent p-0 text-sm leading-6 text-[#1D1D1F]">
+                    <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-8 text-center">
+                      <ScoutMascot size={128} />
+                      <div className="flex flex-col gap-1.5">
+                        <p className="text-base font-semibold -tracking-[0.02em]">
+                          Hi, I’m Scout.
+                        </p>
+                        <p className="max-w-[360px] text-sm leading-6 text-[#777773]">
                           Tell me your budget and the kind of AI tools you use.
                           I’ll compare live verified offers and find the best
                           value.
-                        </MessageContent>
-                        <div className="flex flex-wrap gap-2">
-                          {SUGGESTIONS.map((s) => (
-                            <PromptSuggestion
-                              key={s}
-                              onClick={() => submit(s)}
-                            >
-                              {s}
-                            </PromptSuggestion>
-                          ))}
-                        </div>
+                        </p>
                       </div>
-                    </Message>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {SUGGESTIONS.map((s) => (
+                          <PromptSuggestion
+                            key={s}
+                            onClick={() => submit(s)}
+                          >
+                            {s}
+                          </PromptSuggestion>
+                        ))}
+                      </div>
+                    </div>
                   )}
 
                   {messages?.map((m: Doc<"scoutMessages">) =>
@@ -233,12 +231,7 @@ export default function ScoutPage() {
 
                   {sending && (
                     <Message className="max-w-[92%]">
-                      <MessageAvatar
-                        src=""
-                        alt="Scout"
-                        fallback="S"
-                        className="size-7 rounded-lg bg-[#EAF2FF] text-xs font-semibold text-[#3F83F8]"
-                      />
+                      <ScoutAvatar />
                       <div className="flex items-center gap-2.5">
                         <Loader variant="typing" size="sm" />
                         <TextShimmer className="text-sm" duration={1.2}>
@@ -503,12 +496,7 @@ function AssistantMessage({
 
   return (
     <Message className="t-msg-in max-w-[92%]">
-      <MessageAvatar
-        src=""
-        alt="Scout"
-        fallback="S"
-        className="size-7 rounded-lg bg-[#EAF2FF] text-xs font-semibold text-[#3F83F8]"
-      />
+      <ScoutAvatar />
       <MessageContent
         markdown
         className="prose-sm bg-transparent p-0 text-sm leading-6 text-[#1D1D1F]"
