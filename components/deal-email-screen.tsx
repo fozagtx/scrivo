@@ -38,7 +38,7 @@ export function DealEmailScreen({
               Scrivo Alerts
             </p>
             <p className="truncate text-[9px] text-[#777773]">
-              alerts@scrivo.app · via AgentMail
+              scrivo@agentmail.to · via AgentMail
             </p>
           </div>
           <span className="ml-auto text-[9px] text-[#777773]">8:00 AM</span>

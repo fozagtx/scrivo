@@ -323,10 +323,10 @@ export default function Home() {
               <div className="mt-8 flex flex-wrap items-center gap-2">
                 <StartComparing className="px-5 py-2.5 text-xs uppercase tracking-wider" />
                 <a
-                  href="mailto:alerts@scrivo.app"
+                  href="mailto:scrivo@agentmail.to"
                   className="rounded-full bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-[#1D1D1F] transition-transform hover:-translate-y-px"
                 >
-                  alerts@scrivo.app
+                  scrivo@agentmail.to
                 </a>
               </div>
               <div className="mt-16 grid grid-cols-2 gap-10">

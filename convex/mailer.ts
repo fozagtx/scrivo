@@ -7,7 +7,7 @@ const AGENTMAIL_API = "https://api.agentmail.to/v0";
 
 /**
  * Sends an email through the AgentMail inbox.
- * Env: AGENTMAIL_API_KEY, AGENTMAIL_INBOX (e.g. alerts@scrivo.app)
+ * Env: AGENTMAIL_API_KEY, AGENTMAIL_INBOX (e.g. scrivo@agentmail.to)
  */
 export const send = internalAction({
   args: {

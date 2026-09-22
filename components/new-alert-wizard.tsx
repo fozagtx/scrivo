@@ -617,7 +617,7 @@ function StepSchedule({
             className="h-9 rounded-[8px] border border-[#E5E3DC] bg-white px-3 text-sm outline-hidden focus:ring-2 focus:ring-[#3F83F8]"
           />
           <p className="text-[11px] text-[#9B988E]">
-            Sent from alerts@scrivo.app. Each automation can use its own inbox.
+            Sent from scrivo@agentmail.to. Each automation can use its own inbox.
           </p>
         </FieldCard>
         <FieldCard className="md:col-span-4" label="Send digest at">
