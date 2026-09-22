@@ -155,7 +155,7 @@ export default function NewAlertPage() {
 
   return (
     <AppShell>
-      <Page className="max-w-[1180px]">
+      <Page className="max-w-[1180px] md:py-6">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2 text-sm text-[#777773]">
             <span>Automations</span>
@@ -355,8 +355,8 @@ function StepWatch({
   addTool: () => void;
 }) {
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[1.55fr_1fr]">
-      <section className="flex flex-col gap-6 rounded-[14px] border border-[#E5E3DC] bg-white p-6">
+    <div className="grid items-start gap-5 lg:grid-cols-[1.55fr_1fr]">
+      <section className="flex flex-col gap-5 rounded-[14px] border border-[#E5E3DC] bg-white p-5">
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold -tracking-[0.02em]">
             Choose what to monitor
@@ -386,12 +386,10 @@ function StepWatch({
         </div>
         <div className="flex flex-col gap-3">
           <span className="text-sm font-semibold">Tools</span>
-          <div className="flex flex-col divide-y divide-[#E5E3DC] rounded-lg border border-[#E5E3DC]">
-            {tools.length === 0 && (
-              <p className="p-4 text-sm text-[#777773]">
-                Loading tool catalog…
-              </p>
-            )}
+          {tools.length === 0 && (
+            <p className="text-sm text-[#777773]">Loading tool catalog…</p>
+          )}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
             {tools.map((t: Doc<"tools">) => {
               const on = toolIds.includes(t._id);
               return (
@@ -399,14 +397,26 @@ function StepWatch({
                   key={t._id}
                   type="button"
                   onClick={() => toggleTool(t._id)}
-                  className="flex items-center gap-4 p-4 text-left"
+                  aria-pressed={on}
+                  className={cn(
+                    "relative flex items-center gap-2.5 rounded-lg border border-[#E5E3DC] px-3 py-2.5 text-left transition-colors hover:bg-[#F8F7F3]",
+                    on && "border-[#3F83F8] bg-[#3F83F8]/5",
+                  )}
                 >
-                  <Checkbox checked={on} />
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-[#F1F0EB] text-sm font-semibold">
-                    <ToolMark slug={t.slug} mark={t.mark} name={t.name} />
-                  </div>
-                  <span className="text-sm font-medium">{t.name}</span>
-                  {on && <Check className="ml-auto size-4 text-[#3F83F8]" />}
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-[#F1F0EB] text-xs font-semibold">
+                    <ToolMark
+                      slug={t.slug}
+                      mark={t.mark}
+                      name={t.name}
+                      className="size-4"
+                    />
+                  </span>
+                  <span className="min-w-0 truncate text-[13px] font-medium">
+                    {t.name}
+                  </span>
+                  {on && (
+                    <Check className="ml-auto size-3.5 shrink-0 text-[#3F83F8]" />
+                  )}
                 </button>
               );
             })}
@@ -510,7 +520,7 @@ function StepWatch({
           />
         </div>
       </section>
-      <section className="flex flex-col gap-6 rounded-[14px] border border-[#E5E3DC] bg-white p-6">
+      <section className="flex flex-col gap-5 rounded-[14px] border border-[#E5E3DC] bg-white p-5">
         <div className="flex flex-col gap-3">
           <div className="flex size-10 items-center justify-center rounded-lg bg-[#3F83F8]/10 text-[#3F83F8]">
             <Sparkles className="size-5" />
