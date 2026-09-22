@@ -13,6 +13,10 @@ export function getGuestId(): string {
   return id;
 }
 
+export function clearGuestId() {
+  localStorage.removeItem(KEY);
+}
+
 /** Stable per-browser guest id; null during SSR/prerender. */
 export function useGuestId(): string | null {
   const [id] = useState<string | null>(() =>

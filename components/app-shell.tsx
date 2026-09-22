@@ -17,6 +17,7 @@ import {
 import { api } from "@/convex/_generated/api";
 import { HookSidebar } from "@/components/hook-sidebar";
 import { CandyButton } from "@/components/ui/candy-button";
+import { SignOutButton } from "@/components/sign-out";
 import { useGuestId } from "@/lib/guest";
 import { cn } from "@/lib/utils";
 
@@ -170,6 +171,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {me.name.charAt(0).toUpperCase()}
               </span>
             )}
+            {me && <SignOutButton collapsed />}
             <Link
               href="/automations?new=1"
               title="New alert"
@@ -186,7 +188,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <span className="flex size-7 items-center justify-center rounded-full bg-[#3F83F8] text-[11px] font-semibold text-white">
                   {me.name.charAt(0).toUpperCase()}
                 </span>
-                <div className="min-w-0 leading-tight">
+                <div className="min-w-0 flex-1 leading-tight">
                   <p className="truncate text-sm font-semibold">{me.name}</p>
                   {me.email && (
                     <p className="truncate text-[11px] text-[#9B988E]">
@@ -194,6 +196,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </p>
                   )}
                 </div>
+                <SignOutButton collapsed={false} />
               </div>
             )}
             <Link href="/automations?new=1" className="w-full">
