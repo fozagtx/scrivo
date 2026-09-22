@@ -30,6 +30,27 @@ export const seed = internalMutation({
   },
 });
 
+/** Insert a discovered tool (or return the existing one for its slug). */
+export const upsertInternal = internalMutation({
+  args: {
+    slug: v.string(),
+    name: v.string(),
+    vendor: v.string(),
+    category: v.string(),
+    mark: v.string(),
+    pricingUrl: v.string(),
+    homepageUrl: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("tools")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .unique();
+    if (existing) return existing._id;
+    return await ctx.db.insert("tools", { ...args, active: true });
+  },
+});
+
 export const list = query({
   args: {},
   handler: async (ctx) =>

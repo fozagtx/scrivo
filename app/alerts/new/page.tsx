@@ -1,14 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import {
   Check,
   ChevronRight,
+  Loader2,
   Mail,
   Plus,
+  Search,
   Sparkles,
+  X,
 } from "lucide-react";
 
 import { api } from "@/convex/_generated/api";
@@ -52,6 +55,7 @@ export default function NewAlertPage() {
   const tools = useQuery(api.tools.list) ?? [];
   const create = useMutation(api.alerts.create);
   const identify = useMutation(api.users.identify);
+  const findAndTrack = useAction(api.firecrawl.findAndTrackTool);
 
   const [step, setStep] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
@@ -64,6 +68,11 @@ export default function NewAlertPage() {
   const [threshold, setThreshold] = useState(THRESHOLDS[1]);
   const [emailOverride, setEmailOverride] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [addingTool, setAddingTool] = useState(false);
+  const [toolName, setToolName] = useState("");
+  const [toolCategory, setToolCategory] = useState("Coding");
+  const [toolSearching, setToolSearching] = useState(false);
+  const [toolError, setToolError] = useState<string | null>(null);
 
   const email = emailOverride ?? me?.profile?.alertEmail ?? me?.email ?? "";
   const resolvedEmail = email.trim();
@@ -77,6 +86,12 @@ export default function NewAlertPage() {
 
   const name = `${categories[0] ?? "AI"} deals under $${budget}/mo`;
 
+  // The steps grid-stack to the tallest page — jump back to the top on
+  // step change so a short step isn't rendered above the fold.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [step]);
+
   const toggleCategory = (c: string) =>
     setCategories((l) =>
       l.includes(c) ? l.filter((v) => v !== c) : [...l, c],
@@ -85,6 +100,29 @@ export default function NewAlertPage() {
     setToolIds((l) =>
       l.includes(id) ? l.filter((v) => v !== id) : [...l, id],
     );
+
+  const addTool = async () => {
+    const name = toolName.trim();
+    if (!name || toolSearching) return;
+    setToolSearching(true);
+    setToolError(null);
+    try {
+      const res = await findAndTrack({ name, category: toolCategory });
+      setToolIds((l) =>
+        l.includes(res.toolId as Id<"tools">)
+          ? l
+          : [...l, res.toolId as Id<"tools">],
+      );
+      setToolName("");
+      setAddingTool(false);
+    } catch (e) {
+      setToolError(
+        e instanceof Error ? e.message : "Could not find that tool.",
+      );
+    } finally {
+      setToolSearching(false);
+    }
+  };
 
   const submit = async () => {
     if (!resolvedEmail) return;
@@ -154,6 +192,16 @@ export default function NewAlertPage() {
               budget={budget}
               setBudget={setBudget}
               name={name}
+              addingTool={addingTool}
+              setAddingTool={setAddingTool}
+              toolName={toolName}
+              setToolName={setToolName}
+              toolCategory={toolCategory}
+              setToolCategory={setToolCategory}
+              toolSearching={toolSearching}
+              toolError={toolError}
+              setToolError={setToolError}
+              addTool={addTool}
             />
           </div>
           <div className="t-page" data-page-id="2">
@@ -276,6 +324,16 @@ function StepWatch({
   budget,
   setBudget,
   name,
+  addingTool,
+  setAddingTool,
+  toolName,
+  setToolName,
+  toolCategory,
+  setToolCategory,
+  toolSearching,
+  toolError,
+  setToolError,
+  addTool,
 }: {
   categories: string[];
   toggleCategory: (c: string) => void;
@@ -285,6 +343,16 @@ function StepWatch({
   budget: number;
   setBudget: (v: number) => void;
   name: string;
+  addingTool: boolean;
+  setAddingTool: (v: boolean) => void;
+  toolName: string;
+  setToolName: (v: string) => void;
+  toolCategory: string;
+  setToolCategory: (v: string) => void;
+  toolSearching: boolean;
+  toolError: string | null;
+  setToolError: (v: string | null) => void;
+  addTool: () => void;
 }) {
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[1.55fr_1fr]">
@@ -343,13 +411,87 @@ function StepWatch({
               );
             })}
           </div>
-          <button
-            type="button"
-            className="flex w-fit items-center gap-2 rounded-lg border border-[#E5E3DC] px-4 py-2 text-sm font-medium"
-          >
-            <Plus className="size-4" />
-            Add another tool
-          </button>
+          {!addingTool ? (
+            <button
+              type="button"
+              onClick={() => setAddingTool(true)}
+              className="flex w-fit items-center gap-2 rounded-lg border border-[#E5E3DC] px-4 py-2 text-sm font-medium transition-colors hover:bg-[#F8F7F3]"
+            >
+              <Plus className="size-4" />
+              Add another tool
+            </button>
+          ) : (
+            <div className="flex flex-col gap-3 rounded-lg border border-[#3F83F8]/25 bg-[#F6FAFF] p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold">Track a new tool</p>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onClick={() => {
+                    setAddingTool(false);
+                    setToolError(null);
+                  }}
+                  className="text-[#777773] hover:text-[#1D1D1F]"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+              <p className="text-xs leading-5 text-[#777773]">
+                Name any AI subscription. Scrivo finds its pricing page with
+                Firecrawl, scrapes the live offers, and merges them into your
+                deal feed.
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={toolName}
+                  onChange={(e) => setToolName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addTool()}
+                  placeholder="e.g. Linear, Raycast, Figma AI"
+                  autoFocus
+                  className="h-10 flex-1 rounded-[8px] border border-[#E5E3DC] bg-white px-3 text-sm outline-hidden focus:ring-2 focus:ring-[#3F83F8]"
+                />
+                <CandyButton
+                  type="button"
+                  onClick={addTool}
+                  disabled={toolSearching || !toolName.trim()}
+                  className="flex items-center gap-1.5 rounded-[8px] px-4 text-sm disabled:opacity-50"
+                >
+                  {toolSearching ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Searching…
+                    </>
+                  ) : (
+                    <>
+                      <Search className="size-4" />
+                      Find &amp; track
+                    </>
+                  )}
+                </CandyButton>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs text-[#777773]">Category:</span>
+                {CATEGORIES.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setToolCategory(c)}
+                    className={cn(
+                      "rounded-full border border-[#E5E3DC] bg-white px-2.5 py-1 text-xs text-[#1D1D1F]",
+                      toolCategory === c &&
+                        "border-transparent bg-[#3F83F8]/10 font-medium text-[#2563D6]",
+                    )}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+              {toolError && (
+                <p className="text-xs text-red-600">{toolError}</p>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -429,23 +571,17 @@ function StepSchedule({
   setEmail: (v: string) => void;
 }) {
   return (
-    <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-      <section className="flex flex-col gap-6 rounded-[22px] border border-[#E5E3DC] bg-white p-8">
-        <h2 className="text-xl font-medium -tracking-[0.03em]">
-          Delivery preferences
-        </h2>
-        <div className="flex flex-col gap-3">
-          <span className="text-[13px] font-semibold tracking-[0.02em]">
-            Check for new deals
-          </span>
-          <div className="grid h-11 grid-cols-4 rounded-[14px] border border-[#E5E3DC] bg-[#F1F0EB] p-1">
+    <div className="grid items-start gap-4 lg:grid-cols-[1.55fr_1fr]">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-10">
+        <FieldCard className="col-span-2 md:col-span-10" label="Check for new deals">
+          <div className="grid h-10 grid-cols-4 rounded-[10px] border border-[#E5E3DC] bg-[#F1F0EB] p-1">
             {CADENCES.map((c) => (
               <button
                 key={c.value}
                 type="button"
                 onClick={() => setCadence(c.value)}
                 className={cn(
-                  "rounded-[8px] text-sm text-[#777773]",
+                  "rounded-[8px] text-[13px] text-[#777773]",
                   cadence === c.value &&
                     "bg-white font-medium text-[#1D1D1F] shadow-xs",
                 )}
@@ -454,14 +590,8 @@ function StepSchedule({
               </button>
             ))}
           </div>
-        </div>
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor="alert-email"
-            className="text-[13px] font-semibold tracking-[0.02em]"
-          >
-            Send alerts to
-          </label>
+        </FieldCard>
+        <FieldCard className="col-span-2 md:col-span-4" label="Send alerts to">
           <input
             id="alert-email"
             type="email"
@@ -469,62 +599,51 @@ function StepSchedule({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="h-10 rounded-[8px] border border-[#E5E3DC] bg-white px-3 text-sm outline-hidden focus:ring-2 focus:ring-[#3F83F8]"
+            className="h-9 rounded-[8px] border border-[#E5E3DC] bg-white px-3 text-sm outline-hidden focus:ring-2 focus:ring-[#3F83F8]"
           />
-          <p className="text-xs text-[#777773]">
-            Digests and instant alerts go to this inbox. Each automation can
-            use a different address.
+          <p className="text-[11px] text-[#9B988E]">
+            Sent from alerts@scrivo.app. Each automation can use its own inbox.
           </p>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <label
-              htmlFor="digest-time"
-              className="text-[13px] font-semibold tracking-[0.02em]"
-            >
-              Send digest at
-            </label>
-            <select
-              id="digest-time"
-              value={digestHour}
-              onChange={(e) => setDigestHour(Number(e.target.value))}
-              className="h-10 rounded-[8px] border border-[#E5E3DC] bg-white px-3 text-sm"
-            >
-              {[6, 7, 8, 9, 12, 17, 18, 20].map((h) => (
-                <option key={h} value={h}>
-                  {h === 12 ? "12:00 PM" : h < 12 ? `${h}:00 AM` : `${h - 12}:00 PM`}
-                </option>
-              ))}
-            </select>
+        </FieldCard>
+        <FieldCard className="md:col-span-4" label="Send digest at">
+          <select
+            id="digest-time"
+            value={digestHour}
+            onChange={(e) => setDigestHour(Number(e.target.value))}
+            className="h-9 rounded-[8px] border border-[#E5E3DC] bg-white px-3 text-sm"
+          >
+            {[6, 7, 8, 9, 12, 17, 18, 20].map((h) => (
+              <option key={h} value={h}>
+                {h === 12 ? "12:00 PM" : h < 12 ? `${h}:00 AM` : `${h - 12}:00 PM`}
+              </option>
+            ))}
+          </select>
+        </FieldCard>
+        <FieldCard className="md:col-span-2" label="Timezone">
+          <div className="flex h-9 items-center rounded-[8px] border border-[#E5E3DC] bg-[#F1F0EB] px-3 text-xs text-[#777773]">
+            {timezone.split("/").pop()?.replace("_", " ") ?? timezone}
           </div>
-          <div className="flex flex-col gap-2">
-            <span className="text-[13px] font-semibold tracking-[0.02em]">
-              Timezone
+        </FieldCard>
+        <FieldCard className="col-span-2 md:col-span-4" label="Instant alerts">
+          <label className="flex h-9 items-center gap-2.5">
+            <Checkbox
+              checked={immediate}
+              onCheckedChange={(v) => setImmediate(v === true)}
+            />
+            <span className="text-[13px]">
+              Email me the moment a deal beats my target
             </span>
-            <div className="flex h-10 items-center rounded-[8px] border border-[#E5E3DC] bg-[#F1F0EB] px-3 text-sm text-[#777773]">
-              {timezone}
-            </div>
-          </div>
-        </div>
-        <label className="flex items-center gap-3">
-          <Checkbox
-            checked={immediate}
-            onCheckedChange={(v) => setImmediate(v === true)}
-          />
-          <span className="text-sm">Send immediately when a deal beats my target</span>
-        </label>
-        <div className="flex flex-col gap-2">
-          <span className="text-[13px] font-semibold tracking-[0.02em]">
-            Minimum savings
-          </span>
-          <div className="flex gap-2">
+          </label>
+        </FieldCard>
+        <FieldCard className="col-span-2 md:col-span-6" label="Minimum savings">
+          <div className="flex h-9 items-center gap-2">
             {THRESHOLDS.map((t) => (
               <button
                 key={t.label}
                 type="button"
                 onClick={() => setThreshold(t)}
                 className={cn(
-                  "rounded-[8px] border border-[#E5E3DC] px-3 py-2 text-sm",
+                  "flex-1 rounded-[8px] border border-[#E5E3DC] px-3 py-2 text-[13px]",
                   threshold === t &&
                     "border-[#3F83F8] bg-[#3F83F8]/10 text-[#2563D6]",
                 )}
@@ -533,21 +652,14 @@ function StepSchedule({
               </button>
             ))}
           </div>
-        </div>
-        <div className="flex items-start gap-3 rounded-[14px] border border-[#E5E3DC] bg-[#F1F0EB] p-4 text-sm text-[#777773]">
-          <Mail className="mt-0.5 size-4 shrink-0 text-[#3F83F8]" />
-          <p>
-            Scrivo will send from alerts@scrivo.app
-            {email ? ` to ${email}` : ""}.
-          </p>
-        </div>
-      </section>
-      <section className="flex flex-col gap-6 rounded-[22px] border border-[#E5E3DC] bg-white p-8">
-        <h2 className="text-xl font-medium -tracking-[0.03em]">
+        </FieldCard>
+      </div>
+      <section className="flex flex-col gap-5 rounded-[14px] border border-[#E5E3DC] bg-white p-6">
+        <h2 className="text-lg font-semibold -tracking-[0.02em]">
           Your alert will look like
         </h2>
-        <div className="flex flex-col gap-5 rounded-[22px] border border-[#E5E3DC] bg-white p-6">
-          <div className="flex items-center gap-3 border-b border-[#E5E3DC] pb-5">
+        <div className="flex flex-col gap-4 rounded-[14px] border border-[#E5E3DC] p-5">
+          <div className="flex items-center gap-3 border-b border-[#E5E3DC] pb-4">
             <div className="flex size-9 items-center justify-center rounded-full bg-[#3F83F8]/10">
               <Mail className="size-4 text-[#3F83F8]" />
             </div>
@@ -567,6 +679,30 @@ function StepSchedule({
         </div>
       </section>
     </div>
+  );
+}
+
+function FieldCard({
+  label,
+  className,
+  children,
+}: {
+  label: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      className={cn(
+        "flex flex-col gap-2.5 rounded-[14px] border border-[#E5E3DC] bg-white p-4",
+        className,
+      )}
+    >
+      <span className="text-[12px] font-semibold tracking-[0.02em] text-[#55534D]">
+        {label}
+      </span>
+      {children}
+    </section>
   );
 }
 

@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
-import { ArrowUp, Plus, ShieldCheck } from "lucide-react";
+import {
+  ArrowUp,
+  ChevronDown,
+  Plus,
+  ShieldCheck,
+  Zap,
+} from "lucide-react";
 
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
@@ -20,12 +26,6 @@ import {
   MessageAvatar,
   MessageContent,
 } from "@/components/ui/message";
-import {
-  PromptInput,
-  PromptInputAction,
-  PromptInputActions,
-  PromptInputTextarea,
-} from "@/components/ui/prompt-input";
 import { PromptSuggestion } from "@/components/ui/prompt-suggestion";
 import { TextShimmer } from "@/components/ui/text-shimmer";
 import { Loader } from "@/components/ui/loader";
@@ -37,6 +37,13 @@ const SUGGESTIONS = [
   "Compare Claude vs ChatGPT plans",
   "Any free trials for design tools?",
 ];
+
+const CADENCE_LABEL: Record<string, string> = {
+  hourly: "Hourly",
+  twice_daily: "Twice daily",
+  daily: "Daily",
+  every_2_days: "Every 2 days",
+};
 
 export default function ScoutPage() {
   const guestId = useGuestId();
@@ -52,6 +59,7 @@ export default function ScoutPage() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<"offers" | "automations">("offers");
 
   const messages = useQuery(
     api.scoutDb.messages,
@@ -71,6 +79,10 @@ export default function ScoutPage() {
     }
   }, [messages, threadId, seenIds]);
   const offers = useQuery(api.offers.list, {}) ?? [];
+  const alerts = useQuery(
+    api.alerts.mine,
+    guestId === null ? "skip" : { guestId },
+  ) ?? [];
 
   const submit = async (text?: string) => {
     const content = (text ?? input).trim();
@@ -98,85 +110,61 @@ export default function ScoutPage() {
     }
   };
 
-  const activeThread = threads?.find(
-    (t: Doc<"scoutThreads">) => t._id === threadId,
-  );
-
   return (
     <AppShell>
-      <main className="px-6 py-9 md:px-12">
-        <div className="mx-auto flex max-w-[1420px] flex-col gap-6">
-          <div className="flex items-end justify-between">
-            <div className="flex flex-col gap-2">
-              <div className="text-sm text-[#777773]">Scrivo / Scout chat</div>
-              <h1 className="text-3xl font-medium -tracking-[0.06em]">
+      <main className="flex min-h-0 flex-1 flex-col px-6 py-8 md:px-12">
+        <div className="mx-auto flex w-full max-w-[1420px] flex-1 flex-col gap-5">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-1">
+              <div className="text-xs text-[#777773]">Scrivo / Scout chat</div>
+              <h1 className="text-2xl font-medium -tracking-[0.05em]">
                 Find the right AI stack in real time
               </h1>
-              <p className="text-base text-[#777773]">
-                Ask Scout to compare tools, test your budget, and surface live
-                offers while you think.
-              </p>
             </div>
-            <div className="mb-1 flex items-center gap-2 rounded-full border border-[#BFE8C8] bg-[#DDF4E2] px-3 py-1.5 text-sm font-medium text-[#278348]">
-              <span className="size-2 rounded-full bg-[#41A85F]" />
+            <div className="flex items-center gap-2 rounded-full border border-[#BFE8C8] bg-[#DDF4E2] px-3 py-1.5 text-xs font-medium text-[#278348]">
+              <span className="size-1.5 rounded-full bg-[#41A85F]" />
               <span>Scout is online</span>
             </div>
           </div>
 
-          <div className="grid items-stretch justify-center gap-6 lg:grid-cols-[250px_minmax(0,620px)_320px]">
-            {/* Conversations */}
-            <aside className="flex min-h-[748px] flex-col rounded-[14px] border border-[#E5E3DC] bg-white p-4">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold">Conversations</h2>
-                  <button
-                    type="button"
-                    onClick={() => setThreadId(null)}
-                    className="flex items-center gap-1 rounded-lg bg-[#3F83F8] px-3 py-2 text-xs font-semibold text-white"
+          {/* Workspace: chat pane left, live results pane right */}
+          <div className="grid flex-1 overflow-hidden rounded-[14px] border border-[#E5E3DC] bg-white lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+            {/* Chat pane */}
+            <section className="flex min-h-[640px] flex-col border-b border-[#E5E3DC] lg:border-b-0 lg:border-r">
+              <div className="flex items-center justify-between gap-3 border-b border-[#E5E3DC] px-4 py-3">
+                <div className="relative min-w-0 flex-1">
+                  <select
+                    value={threadId ?? ""}
+                    onChange={(e) =>
+                      setThreadId(
+                        e.target.value === ""
+                          ? null
+                          : (e.target.value as Id<"scoutThreads">),
+                      )
+                    }
+                    className="w-full cursor-pointer appearance-none truncate rounded-lg border border-transparent bg-transparent py-1.5 pl-2 pr-8 text-sm font-medium outline-hidden hover:border-[#E5E3DC] focus:border-[#E5E3DC]"
                   >
-                    <Plus className="size-4" />
-                    <span>New chat</span>
-                  </button>
+                    <option value="">New conversation</option>
+                    {(threads ?? []).map((t: Doc<"scoutThreads">) => (
+                      <option key={t._id} value={t._id}>
+                        {t.title}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-[#777773]" />
                 </div>
-                <div className="flex flex-col gap-1">
-                  {(threads ?? []).map((t: Doc<"scoutThreads">) => (
-                    <button
-                      key={t._id}
-                      type="button"
-                      onClick={() => setThreadId(t._id)}
-                      className={cn(
-                        "flex flex-col gap-1 rounded-lg p-3 text-left",
-                        t._id === threadId && "bg-[#EAF2FF]",
-                      )}
-                    >
-                      <span className="text-sm font-medium">{t.title}</span>
-                      <span className="text-xs text-[#777773]">
-                        {new Date(t.updatedAt).toLocaleDateString()}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="mt-auto border-t border-[#E5E3DC] pt-4 text-xs text-[#777773]">
-                Live searches refresh as you chat
-              </div>
-            </aside>
-
-            {/* Chat */}
-            <section className="flex min-h-[748px] flex-col overflow-hidden rounded-[14px] border border-[#E5E3DC] bg-white">
-              <div className="flex items-center justify-between border-b border-[#E5E3DC] px-6 py-4">
-                <div className="flex flex-col gap-1">
-                  <h2 className="text-sm font-semibold">
-                    {activeThread?.title ?? "New conversation"}
-                  </h2>
-                  <p className="text-xs text-[#777773]">
-                    Scout can browse current offers and compare monthly cost
-                  </p>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setThreadId(null)}
+                  title="New chat"
+                  className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-[#E5E3DC] text-[#55534D] transition-colors hover:bg-[#F8F7F3]"
+                >
+                  <Plus className="size-4" />
+                </button>
               </div>
 
               <ChatContainerRoot className="flex-1">
-                <ChatContainerContent className="flex flex-col gap-6 px-6 py-6">
+                <ChatContainerContent className="flex flex-col gap-5 px-5 py-5">
                   {(!messages || messages.length === 0) && (
                     <Message className="max-w-[92%]">
                       <MessageAvatar
@@ -241,87 +229,169 @@ export default function ScoutPage() {
                 </ChatContainerContent>
               </ChatContainerRoot>
 
-              <div className="border-t border-[#E5E3DC] bg-white p-4">
-                <PromptInput
-                  value={input}
-                  onValueChange={setInput}
-                  onSubmit={() => submit()}
-                  isLoading={sending}
-                  className="rounded-xl border-[#D2D0C8]"
-                >
-                  <PromptInputTextarea placeholder="Ask Scout to compare another option..." />
-                  <PromptInputActions className="justify-end">
-                    <PromptInputAction tooltip="Send">
-                      <button
-                        type="button"
-                        aria-label="Send message"
-                        onClick={() => submit()}
-                        disabled={sending || !input.trim()}
-                        className="flex size-9 items-center justify-center rounded-full bg-[#3F83F8] text-white transition-colors hover:bg-[#2563D6] disabled:opacity-50"
-                      >
-                        <ArrowUp className="size-4" />
-                      </button>
-                    </PromptInputAction>
-                  </PromptInputActions>
-                </PromptInput>
+              <div className="border-t border-[#E5E3DC] bg-white p-3">
+                <div className="flex items-end gap-2 rounded-full border border-[#D2D0C8] bg-white py-1.5 pl-4 pr-1.5 transition-shadow focus-within:border-[#3F83F8] focus-within:ring-2 focus-within:ring-[#3F83F8]/15">
+                  <textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        submit();
+                      }
+                    }}
+                    rows={1}
+                    placeholder="Ask Scout to compare another option..."
+                    className="max-h-32 flex-1 resize-none bg-transparent py-1.5 text-sm outline-hidden placeholder:text-[#9B988E]"
+                  />
+                  <button
+                    type="button"
+                    aria-label="Send message"
+                    onClick={() => submit()}
+                    disabled={sending || !input.trim()}
+                    className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#3F83F8] text-white transition-colors hover:bg-[#2563D6] disabled:opacity-50"
+                  >
+                    <ArrowUp className="size-4" />
+                  </button>
+                </div>
                 {error && (
-                  <p className="px-1 pt-2 text-xs text-red-600">{error}</p>
+                  <p className="px-2 pt-2 text-xs text-red-600">{error}</p>
                 )}
-                <p className="px-1 pt-3 text-[11px] leading-4 text-[#777773]">
-                  Scout uses Firecrawl to check public pricing and offer pages.
-                  Verify availability before checkout.
-                </p>
               </div>
             </section>
 
-            {/* Live recommendations */}
-            <aside className="flex min-h-[748px] flex-col gap-4 rounded-[14px] border border-[#E5E3DC] bg-white p-5">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold">Live offers</h2>
+            {/* Results pane */}
+            <section className="flex min-h-[480px] flex-col bg-[#FBFAF7]">
+              <div className="flex items-center justify-between border-b border-[#E5E3DC] bg-white px-4 py-2">
+                <div className="flex items-center gap-1">
+                  {(
+                    [
+                      { id: "offers", label: "Live offers" },
+                      { id: "automations", label: "Automations" },
+                    ] as const
+                  ).map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTab(t.id)}
+                      className={cn(
+                        "rounded-lg px-3 py-1.5 text-[13px] text-[#777773] transition-colors",
+                        tab === t.id &&
+                          "bg-[#F1F0EB] font-medium text-[#1D1D1F]",
+                      )}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
                 <span className="text-xs text-[#777773]">
-                  {offers.length} verified
+                  {tab === "offers"
+                    ? `${offers.length} verified`
+                    : `${alerts.length} active`}
                 </span>
               </div>
-              <div className="flex flex-col gap-2">
-                {offers.slice(0, 6).map((o: ListedOffer) => (
-                  <a
-                    key={o._id}
-                    href={o.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-between rounded-lg border border-[#E5E3DC] px-3 py-2 text-sm hover:bg-[#F8F7F3]"
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="flex size-6 items-center justify-center rounded-md bg-[#F1F0EB] text-[10px] font-bold text-[#1D1D1F]">
-                        <ToolMark
-                          slug={o.tool.slug}
-                          mark={o.tool.mark}
-                          name={o.tool.name}
-                          className="size-3.5"
+
+              <div className="flex-1 overflow-y-auto">
+                {tab === "offers" ? (
+                  <ul className="divide-y divide-[#EFEDE6]">
+                    {offers.map((o: ListedOffer) => (
+                      <li key={o._id}>
+                        <a
+                          href={o.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white"
+                        >
+                          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-[#EFEDE6] bg-white">
+                            <ToolMark
+                              slug={o.tool.slug}
+                              mark={o.tool.mark}
+                              name={o.tool.name}
+                              className="size-4"
+                            />
+                          </span>
+                          <span className="flex min-w-0 flex-1 flex-col">
+                            <span className="truncate text-[13px] font-medium text-[#1D1D1F]">
+                              {o.title}
+                            </span>
+                            <span className="truncate text-xs text-[#9B988E]">
+                              {o.tool.name} · {o.tool.category}
+                            </span>
+                          </span>
+                          <span className="flex shrink-0 flex-col items-end">
+                            <span className="text-[13px] font-semibold text-[#1D1D1F]">
+                              {o.priceCents != null
+                                ? `$${(o.priceCents / 100).toFixed(o.priceCents % 100 === 0 ? 0 : 2)}/mo`
+                                : "Free tier"}
+                            </span>
+                            {o.savingsPct != null && o.savingsPct > 0 && (
+                              <span className="text-[11px] font-medium text-[#278348]">
+                                Save {o.savingsPct}%
+                              </span>
+                            )}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                    {offers.length === 0 && (
+                      <li className="flex flex-col items-center gap-2 px-6 py-16 text-center">
+                        <Zap className="size-5 text-[#C4C1B6]" />
+                        <p className="max-w-[260px] text-sm text-[#777773]">
+                          No verified offers yet. Add a tool from the alert
+                          wizard and Firecrawl will scan its pricing page.
+                        </p>
+                      </li>
+                    )}
+                  </ul>
+                ) : (
+                  <ul className="divide-y divide-[#EFEDE6]">
+                    {alerts.map((a: Doc<"alerts">) => (
+                      <li
+                        key={a._id}
+                        className="flex items-center gap-3 px-4 py-3"
+                      >
+                        <span
+                          className={cn(
+                            "size-2 shrink-0 rounded-full",
+                            a.status === "active"
+                              ? "bg-[#41A85F]"
+                              : "bg-[#C4C1B6]",
+                          )}
                         />
-                      </span>
-                      {o.tool.name}
-                    </span>
-                    <span className="text-[#777773]">
-                      {o.priceCents != null
-                        ? `$${Math.round(o.priceCents / 100)}/mo`
-                        : "—"}
-                    </span>
-                  </a>
-                ))}
-                {offers.length === 0 && (
-                  <p className="text-sm text-[#777773]">
-                    Offers appear here after the first Firecrawl scan.
-                  </p>
+                        <span className="flex min-w-0 flex-1 flex-col">
+                          <span className="truncate text-[13px] font-medium text-[#1D1D1F]">
+                            {a.name}
+                          </span>
+                          <span className="truncate text-xs text-[#9B988E]">
+                            {a.email} · ${Math.round(a.budgetCents / 100)}/mo
+                            budget
+                          </span>
+                        </span>
+                        <span className="shrink-0 rounded-full border border-[#EFEDE6] bg-white px-2.5 py-1 text-[11px] font-medium text-[#55534D]">
+                          {CADENCE_LABEL[a.cadence] ?? a.cadence}
+                        </span>
+                      </li>
+                    ))}
+                    {alerts.length === 0 && (
+                      <li className="flex flex-col items-center gap-2 px-6 py-16 text-center">
+                        <Zap className="size-5 text-[#C4C1B6]" />
+                        <p className="max-w-[260px] text-sm text-[#777773]">
+                          No automations yet. Create an alert and matched deals
+                          will land in your inbox on schedule.
+                        </p>
+                      </li>
+                    )}
+                  </ul>
                 )}
               </div>
-              <div className="mt-auto flex flex-col gap-4 border-t border-[#E5E3DC] pt-4">
-                <div className="flex items-center gap-2 text-xs text-[#777773]">
-                  <ShieldCheck className="size-4 text-[#3F83F8]" />
-                  <span>Prices checked across public offer pages</span>
-                </div>
+
+              <div className="flex items-center gap-2 border-t border-[#E5E3DC] bg-white px-4 py-3 text-xs text-[#777773]">
+                <ShieldCheck className="size-4 shrink-0 text-[#3F83F8]" />
+                <span>
+                  Prices checked across public offer pages with Firecrawl
+                </span>
               </div>
-            </aside>
+            </section>
           </div>
         </div>
       </main>
