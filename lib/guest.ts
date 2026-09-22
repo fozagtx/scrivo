@@ -13,6 +13,10 @@ export function getGuestId(): string {
   return id;
 }
 
+export function setGuestId(id: string) {
+  localStorage.setItem(KEY, id);
+}
+
 export function clearGuestId() {
   localStorage.removeItem(KEY);
 }

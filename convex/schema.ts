@@ -7,7 +7,10 @@ export default defineSchema({
     name: v.string(),
     email: v.optional(v.string()),
     pictureUrl: v.optional(v.string()),
-  }).index("tokenIdentifier", ["tokenIdentifier"]),
+    nameKey: v.optional(v.string()),
+  })
+    .index("tokenIdentifier", ["tokenIdentifier"])
+    .index("by_nameKey", ["nameKey"]),
 
   // AI subscription tools Scrivo watches (reference catalog, seeded)
   tools: defineTable({

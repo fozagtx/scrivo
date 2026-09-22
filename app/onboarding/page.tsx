@@ -10,7 +10,8 @@ import { api } from "@/convex/_generated/api";
 import { Reveal, RevealLine } from "@/components/reveal";
 import { CandyButton } from "@/components/ui/candy-button";
 import RetroDither from "@/components/canvasui/RetroDither";
-import { useGuestId } from "@/lib/guest";
+import { ClerkSignIn } from "@/components/clerk-sign-in";
+import { setGuestId, useGuestId } from "@/lib/guest";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -23,14 +24,15 @@ export default function OnboardingPage() {
 
   const [name, setName] = useState("");
   const [preparing, setPreparing] = useState(false);
+  const [returning, setReturning] = useState(false);
 
   const resolvedName = (name.trim() || me?.name || "").trim();
 
   useEffect(() => {
-    if (!preparing) return;
+    if (!preparing || returning) return;
     const t = setTimeout(() => router.push("/deals"), 2000);
     return () => clearTimeout(t);
-  }, [preparing, router]);
+  }, [preparing, returning, router]);
 
   // Returning visitor with a saved identity — skip the form entirely.
   useEffect(() => {
@@ -41,10 +43,22 @@ export default function OnboardingPage() {
     if (!resolvedName || preparing) return;
     setPreparing(true);
     try {
-      await identify({
+      const res = await identify({
         guestId: guestId ?? undefined,
         name: resolvedName,
       });
+      if (res.returning && res.guestId && res.guestId !== guestId) {
+        setGuestId(res.guestId);
+        setReturning(true);
+        // Full reload: useGuestId initialises once per mount and all
+        // Convex queries must rebind to the restored guest id. Short pause
+        // so the "Welcome back" panel is actually seen.
+        setTimeout(() => {
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- intentional full reload to reset guest identity
+          window.location.assign("/deals");
+        }, 1200);
+        return;
+      }
     } catch {
       router.push("/deals");
     }
@@ -77,12 +91,23 @@ export default function OnboardingPage() {
                 </span>
                 <div>
                   <h1 className="text-3xl font-medium -tracking-[0.05em] md:text-4xl">
-                    Setting up{" "}
-                    <span className="text-[#3F83F8]">{resolvedName}</span>
-                    ’s dashboard
+                    {returning ? (
+                      <>
+                        Welcome back,{" "}
+                        <span className="text-[#3F83F8]">{resolvedName}</span>
+                      </>
+                    ) : (
+                      <>
+                        Setting up{" "}
+                        <span className="text-[#3F83F8]">{resolvedName}</span>
+                        ’s dashboard
+                      </>
+                    )}
                   </h1>
                   <p className="mt-3 text-sm text-[#777773]">
-                    Saving your profile and warming up the scanners.
+                    {returning
+                      ? "Restoring your alerts, saved deals and Scout threads."
+                      : "Saving your profile and warming up the scanners."}
                   </p>
                 </div>
                 <div className="h-1 w-56 overflow-hidden rounded-full bg-[#F1F0EB]">
@@ -130,8 +155,9 @@ export default function OnboardingPage() {
                   </div>
                 </RetroDither>
                 <div className="flex flex-col gap-6 rounded-[14px] border border-[#E5E3DC] bg-white p-8">
+                  <ClerkSignIn />
                   <h2 className="text-xl font-medium -tracking-[0.03em]">
-                    First, what should we call you?
+                    Or just enter a username
                   </h2>
                   <div className="flex flex-col gap-8">
                     <div className="flex flex-col gap-2">
@@ -152,9 +178,9 @@ export default function OnboardingPage() {
                         className="h-11 rounded-[8px] border border-[#E5E3DC] bg-white px-3 text-sm outline-hidden focus:ring-2 focus:ring-[#3F83F8]"
                       />
                       <p className="text-xs text-[#777773]">
-                        This is the name we’ll greet you with across your
-                        dashboard and digests. You’ll pick the delivery email
-                        when you set up your first automation.
+                        Your name is your login — use the same one next time
+                        to pick up where you left off. You’ll pick the
+                        delivery email when you set up your first automation.
                       </p>
                     </div>
                   </div>

@@ -131,15 +131,22 @@ export function NewAlertWizard({
     }
   };
 
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const submit = async () => {
     if (!resolvedEmail) return;
     setSaving(true);
+    setSubmitError(null);
     try {
-      await identify({
-        guestId: guestId ?? undefined,
-        name: me?.name || "Friend",
-        email: resolvedEmail,
-      });
+      // Only attach the email to a named account — with name-as-login,
+      // "Friend" would collide across strangers.
+      if (me?.name) {
+        await identify({
+          guestId: guestId ?? undefined,
+          name: me.name,
+          email: resolvedEmail,
+        });
+      }
       await create({
         guestId: guestId ?? undefined,
         name,
@@ -155,6 +162,8 @@ export function NewAlertWizard({
         email: resolvedEmail,
       });
       onCreated();
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
       setSaving(false);
     }
@@ -267,6 +276,9 @@ export function NewAlertWizard({
               >
                 {saving ? "Turning on…" : "Turn on alert"}
               </CandyButton>
+              {submitError && (
+                <p className="text-xs text-red-600">{submitError}</p>
+              )}
               <p className="text-xs text-[#777773]">
                 {resolvedEmail
                   ? `Digests go to ${resolvedEmail}.`
