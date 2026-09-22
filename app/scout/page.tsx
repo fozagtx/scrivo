@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
   ArrowUp,
@@ -14,7 +15,7 @@ import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import type { ListedOffer } from "@/components/deal-explorer";
 import { ToolMark } from "@/components/tool-mark";
-import { AppShell } from "@/components/app-shell";
+import { AppShell, Page, PageHeader } from "@/components/app-shell";
 import { useGuestId } from "@/lib/guest";
 import {
   ChatContainerContent,
@@ -60,6 +61,7 @@ export default function ScoutPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<"offers" | "automations">("offers");
+  const [resultsOpen, setResultsOpen] = useState(false);
 
   const messages = useQuery(
     api.scoutDb.messages,
@@ -99,6 +101,11 @@ export default function ScoutPage() {
     return [...relevant, ...rest].slice(0, 7);
   }, [offers, messages]);
 
+  const trackedTools = useMemo(
+    () => [...new Map(offers.map((o) => [o.tool.name, o.tool])).values()],
+    [offers],
+  );
+
   const submit = async (text?: string) => {
     const content = (text ?? input).trim();
     if (!content || sending) return;
@@ -127,25 +134,25 @@ export default function ScoutPage() {
 
   return (
     <AppShell>
-      <main className="flex min-h-0 flex-1 flex-col px-6 py-8 md:px-12">
-        <div className="mx-auto flex w-full max-w-[1420px] flex-1 flex-col gap-5">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col gap-1">
-              <div className="text-xs text-[#777773]">Scrivo / Scout chat</div>
-              <h1 className="text-2xl font-medium -tracking-[0.05em]">
-                Find the right AI stack in real time
-              </h1>
-            </div>
+      <Page className="min-h-0 flex-1">
+        <PageHeader
+          eyebrow="Scout"
+          title="Find the right AI stack in real time"
+          action={
             <div className="flex items-center gap-2 rounded-full border border-[#BFE8C8] bg-[#DDF4E2] px-3 py-1.5 text-xs font-medium text-[#278348]">
               <span className="size-1.5 rounded-full bg-[#41A85F]" />
               <span>Scout is online</span>
             </div>
-          </div>
+          }
+        />
 
-          {/* Workspace: chat pane left, live results pane right */}
-          <div className="grid flex-1 overflow-hidden rounded-[14px] border border-[#E5E3DC] bg-white lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-            {/* Chat pane */}
-            <section className="flex min-h-[640px] flex-col border-b border-[#E5E3DC] lg:border-b-0 lg:border-r">
+        {/* Workspace: chat pane left, live results pane right */}
+        <div
+          data-workspace
+          className="grid flex-1 grid-cols-1 overflow-hidden rounded-[14px] border border-[#E5E3DC] bg-white lg:h-[calc(100dvh-200px)] lg:min-h-[560px] lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]"
+        >
+          {/* Chat pane */}
+          <section className="flex h-[70dvh] min-h-[480px] min-w-0 flex-col border-b border-[#E5E3DC] lg:h-auto lg:min-h-0 lg:border-b-0 lg:border-r">
               <div className="flex items-center justify-between gap-3 border-b border-[#E5E3DC] px-4 py-3">
                 <div className="relative min-w-0 flex-1">
                   <select
@@ -157,7 +164,7 @@ export default function ScoutPage() {
                           : (e.target.value as Id<"scoutThreads">),
                       )
                     }
-                    className="w-full cursor-pointer appearance-none truncate rounded-lg border border-transparent bg-transparent py-1.5 pl-2 pr-8 text-sm font-medium outline-hidden hover:border-[#E5E3DC] focus:border-[#E5E3DC]"
+                    className="w-full max-w-full cursor-pointer appearance-none truncate rounded-lg border border-transparent bg-transparent py-1.5 pl-2 pr-8 text-sm font-medium outline-hidden hover:border-[#E5E3DC] focus:border-[#E5E3DC]"
                   >
                     <option value="">New conversation</option>
                     {(threads ?? []).map((t: Doc<"scoutThreads">) => (
@@ -178,7 +185,7 @@ export default function ScoutPage() {
                 </button>
               </div>
 
-              <ChatContainerRoot className="flex-1">
+              <ChatContainerRoot className="min-h-0 flex-1">
                 <ChatContainerContent className="flex flex-col gap-5 px-5 py-5">
                   {(!messages || messages.length === 0) && (
                     <Message className="max-w-[92%]">
@@ -276,8 +283,8 @@ export default function ScoutPage() {
             </section>
 
             {/* Results pane */}
-            <section className="flex min-h-[480px] flex-col bg-[#FBFAF7]">
-              <div className="flex items-center justify-between border-b border-[#E5E3DC] bg-white px-4 py-2">
+            <section className="flex min-h-0 min-w-0 flex-col bg-[#FBFAF7]">
+              <div className="flex items-center justify-between gap-2 border-b border-[#E5E3DC] bg-white px-4 py-2">
                 <div className="flex items-center gap-1">
                   {(
                     [
@@ -299,15 +306,37 @@ export default function ScoutPage() {
                     </button>
                   ))}
                 </div>
-                <span className="text-xs text-[#777773]">
-                  {tab === "offers"
-                    ? `${offers.length} verified`
-                    : `${alerts.length} active`}
-                </span>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-[#777773]">
+                    {tab === "offers"
+                      ? `${offers.length} verified`
+                      : `${alerts.length} active`}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label={resultsOpen ? "Hide results" : "Show results"}
+                    aria-expanded={resultsOpen}
+                    onClick={() => setResultsOpen((v) => !v)}
+                    className="flex size-7 items-center justify-center rounded-lg text-[#777773] transition-colors hover:bg-[#F1F0EB] lg:hidden"
+                  >
+                    <ChevronDown
+                      className={cn(
+                        "size-4 transition-transform",
+                        resultsOpen && "rotate-180",
+                      )}
+                    />
+                  </button>
+                </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto">
+              <div
+                className={cn(
+                  "min-h-0 flex-1 overflow-y-auto",
+                  !resultsOpen && "hidden lg:block",
+                )}
+              >
                 {tab === "offers" ? (
+                  <>
                   <ul className="divide-y divide-[#EFEDE6]">
                     {panelOffers.map((o: ListedOffer) => (
                       <li key={o._id}>
@@ -358,6 +387,39 @@ export default function ScoutPage() {
                       </li>
                     )}
                   </ul>
+                  {offers.length > 0 && (
+                    <div className="border-t border-[#E5E3DC] px-4 py-3">
+                      <p className="text-xs text-[#777773]">Also tracking</p>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        {trackedTools.slice(0, 10).map((t) => (
+                          <span
+                            key={t.name}
+                            title={t.name}
+                            className="flex size-8 items-center justify-center rounded-lg border border-[#EFEDE6] bg-white"
+                          >
+                            <ToolMark
+                              slug={t.slug}
+                              mark={t.mark}
+                              name={t.name}
+                              className="size-5"
+                            />
+                          </span>
+                        ))}
+                        {trackedTools.length > 10 && (
+                          <span className="flex size-8 items-center justify-center rounded-lg border border-[#EFEDE6] bg-white text-[11px] text-[#777773]">
+                            +{trackedTools.length - 10}
+                          </span>
+                        )}
+                      </div>
+                      <Link
+                        href="/deals"
+                        className="mt-2 inline-block text-xs font-medium text-[#3F83F8]"
+                      >
+                        Browse all {offers.length} offers →
+                      </Link>
+                    </div>
+                  )}
+                  </>
                 ) : (
                   <ul className="divide-y divide-[#EFEDE6]">
                     {alerts.map((a: Doc<"alerts">) => (
@@ -400,7 +462,12 @@ export default function ScoutPage() {
                 )}
               </div>
 
-              <div className="flex items-center gap-2 border-t border-[#E5E3DC] bg-white px-4 py-3 text-xs text-[#777773]">
+              <div
+                className={cn(
+                  "flex items-center gap-2 border-t border-[#E5E3DC] bg-white px-4 py-3 text-xs text-[#777773]",
+                  !resultsOpen && "hidden lg:flex",
+                )}
+              >
                 <ShieldCheck className="size-4 shrink-0 text-[#3F83F8]" />
                 <span>
                   Prices checked across public offer pages with Firecrawl
@@ -408,8 +475,7 @@ export default function ScoutPage() {
               </div>
             </section>
           </div>
-        </div>
-      </main>
+      </Page>
     </AppShell>
   );
 }

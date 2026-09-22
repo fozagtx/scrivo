@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { ExternalLink } from "lucide-react";
 
 import { api } from "@/convex/_generated/api";
-import { AppShell } from "@/components/app-shell";
+import { AppShell, Page, PageHeader } from "@/components/app-shell";
 import { useGuestId } from "@/lib/guest";
 import type { ListedOffer } from "@/components/deal-explorer";
 import { ToolMark } from "@/components/tool-mark";
@@ -23,8 +23,11 @@ export default function SavedPage() {
 
   return (
     <AppShell>
-      <main className="mx-auto flex w-full max-w-[1180px] flex-col gap-6 px-6 py-8 md:px-8">
-        <h1 className="text-3xl font-medium -tracking-[0.06em]">Saved deals</h1>
+      <Page>
+        <PageHeader
+          title="Saved deals"
+          description="Deals you bookmarked."
+        />
         {saved === undefined ? (
           <p className="py-16 text-center text-sm text-[#777773]">Loading…</p>
         ) : saved.length === 0 ? (
@@ -39,7 +42,7 @@ export default function SavedPage() {
             {saved.map((o: ListedOffer) => (
               <article
                 key={o._id}
-                className="flex items-center gap-5 rounded-[14px] border border-[#E5E3DC] bg-white p-5"
+                className="flex flex-col gap-4 rounded-[14px] border border-[#E5E3DC] bg-white p-5 sm:flex-row sm:items-center sm:gap-5"
               >
                 <div className="flex size-12 items-center justify-center rounded-xl bg-[#F1F0EB] text-lg font-semibold">
                   <ToolMark
@@ -95,7 +98,7 @@ export default function SavedPage() {
             ))}
           </div>
         )}
-      </main>
+      </Page>
     </AppShell>
   );
 }

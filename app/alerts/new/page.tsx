@@ -17,7 +17,7 @@ import {
 import { api } from "@/convex/_generated/api";
 import { ToolMark } from "@/components/tool-mark";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
-import { AppShell } from "@/components/app-shell";
+import { AppShell, Page } from "@/components/app-shell";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CandyButton } from "@/components/ui/candy-button";
 import { useGuestId } from "@/lib/guest";
@@ -155,7 +155,7 @@ export default function NewAlertPage() {
 
   return (
     <AppShell>
-      <main className="mx-auto flex w-full max-w-[1180px] flex-col gap-8 px-6 py-12 md:px-8">
+      <Page className="max-w-[1180px]">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2 text-sm text-[#777773]">
             <span>Automations</span>
@@ -269,7 +269,7 @@ export default function NewAlertPage() {
             </div>
           )}
         </div>
-      </main>
+      </Page>
     </AppShell>
   );
 }

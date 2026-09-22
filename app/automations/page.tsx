@@ -16,7 +16,7 @@ import { api } from "@/convex/_generated/api";
 import { ToolMark } from "@/components/tool-mark";
 import { Toggle } from "@/components/ui/toggle";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
-import { AppShell } from "@/components/app-shell";
+import { AppShell, Page, PageHeader } from "@/components/app-shell";
 import { CandyButton } from "@/components/ui/candy-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useGuestId } from "@/lib/guest";
@@ -57,7 +57,7 @@ function AutomationsContent() {
 
   return (
     <AppShell>
-      <main className="mx-auto flex w-full max-w-[1180px] flex-col gap-6 px-6 py-8 md:px-8">
+      <Page className="max-w-[1180px]">
         {justCreated && (
           <div className="flex items-center gap-3 rounded-[8px] border border-[#3F83F8]/20 bg-[#3F83F8]/5 px-4 py-3">
             <CircleCheck className="size-5 text-[#3F83F8]" />
@@ -70,17 +70,18 @@ function AutomationsContent() {
           </div>
         )}
 
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-medium -tracking-[0.06em]">
-            Automations
-          </h1>
-          <Link href="/alerts/new">
-            <CandyButton className="flex items-center gap-2 rounded-full px-5 py-2 text-sm">
-              <Plus className="size-4" />
-              New alert
-            </CandyButton>
-          </Link>
-        </div>
+        <PageHeader
+          title="Automations"
+          description="Scheduled scans that email you when a deal matches."
+          action={
+            <Link href="/alerts/new">
+              <CandyButton className="flex items-center gap-2 rounded-full px-5 py-2 text-sm">
+                <Plus className="size-4" />
+                New alert
+              </CandyButton>
+            </Link>
+          }
+        />
 
         {alerts === undefined ? (
           <p className="py-16 text-center text-sm text-[#777773]">Loading…</p>
@@ -133,7 +134,7 @@ function AutomationsContent() {
             </section>
           </div>
         )}
-      </main>
+      </Page>
     </AppShell>
   );
 }
