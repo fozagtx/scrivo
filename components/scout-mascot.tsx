@@ -4,8 +4,8 @@ import { Mascot } from "page-mascot";
 
 import { cn } from "@/lib/utils";
 
-const DIRECTIONS = "/mascots/glasses-directions.webp";
-const REACTIONS = "/mascots/glasses-reactions.webp";
+const DIRECTIONS = "/mascots/owl-directions.webp";
+const REACTIONS = "/mascots/owl-reactions.webp";
 
 /** Scout's face: follows the cursor, reacts when poked. */
 export function ScoutMascot({
