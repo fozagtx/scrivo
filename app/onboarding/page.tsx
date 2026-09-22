@@ -33,6 +33,11 @@ export default function OnboardingPage() {
     return () => clearTimeout(t);
   }, [preparing, router]);
 
+  // Returning visitor with a saved identity — skip the form entirely.
+  useEffect(() => {
+    if (me && !preparing) router.replace("/deals");
+  }, [me, preparing, router]);
+
   const submit = async () => {
     if (!resolvedName || preparing) return;
     setPreparing(true);
@@ -52,7 +57,13 @@ export default function OnboardingPage() {
       <main className="flex min-h-[calc(100vh-72px)] flex-col items-center px-6 py-12">
         <div className="flex w-full max-w-[1180px] flex-col items-center gap-4">
           <section className="w-full overflow-hidden rounded-[22px] border border-[#E5E3DC] bg-white p-8 md:p-12">
-            {preparing ? (
+            {!preparing && (me === undefined || me) ? (
+              <div className="flex min-h-[480px] items-center justify-center">
+                <span className="t-prepare-pulse flex size-14 items-center justify-center rounded-2xl bg-[#3F83F8]">
+                  <Tag className="size-6 text-white" />
+                </span>
+              </div>
+            ) : preparing ? (
               <div className="flex min-h-[480px] flex-col items-center justify-center gap-6 text-center">
                 <span className="t-prepare-pulse flex size-14 items-center justify-center rounded-2xl bg-[#3F83F8]">
                   <Tag className="size-6 text-white" />
