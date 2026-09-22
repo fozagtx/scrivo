@@ -1,5 +1,6 @@
 import { internalMutation, mutation, query } from "./_generated/server";
-import type { QueryCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 
 export async function currentUser(ctx: QueryCtx) {
@@ -134,6 +135,162 @@ export const backfillNameKeys = internalMutation({
       }
     }
     return { updated };
+  },
+});
+
+/** Deletes a user and every row they own. Returns per-table counts. */
+async function deleteUserCascade(ctx: MutationCtx, userId: Id<"users">) {
+  const counts = {
+    alerts: 0,
+    matches: 0,
+    savedOffers: 0,
+    profiles: 0,
+    threads: 0,
+    messages: 0,
+  };
+  const alerts = await ctx.db
+    .query("alerts")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .collect();
+  for (const alert of alerts) {
+    const matches = await ctx.db
+      .query("matches")
+      .withIndex("by_alert", (q) => q.eq("alertId", alert._id))
+      .collect();
+    for (const m of matches) {
+      await ctx.db.delete(m._id);
+      counts.matches++;
+    }
+    await ctx.db.delete(alert._id);
+    counts.alerts++;
+  }
+  const saved = await ctx.db
+    .query("savedOffers")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .collect();
+  for (const s of saved) {
+    await ctx.db.delete(s._id);
+    counts.savedOffers++;
+  }
+  const profiles = await ctx.db
+    .query("profiles")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .collect();
+  for (const p of profiles) {
+    await ctx.db.delete(p._id);
+    counts.profiles++;
+  }
+  const threads = await ctx.db
+    .query("scoutThreads")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .collect();
+  for (const t of threads) {
+    const messages = await ctx.db
+      .query("scoutMessages")
+      .withIndex("by_thread", (q) => q.eq("threadId", t._id))
+      .collect();
+    for (const m of messages) {
+      await ctx.db.delete(m._id);
+      counts.messages++;
+    }
+    await ctx.db.delete(t._id);
+    counts.threads++;
+  }
+  await ctx.db.delete(userId);
+  return counts;
+}
+
+export const removeUser = internalMutation({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) {
+      return {
+        alerts: 0,
+        matches: 0,
+        savedOffers: 0,
+        profiles: 0,
+        threads: 0,
+        messages: 0,
+      };
+    }
+    return await deleteUserCascade(ctx, args.userId);
+  },
+});
+
+export const purgeUsers = internalMutation({
+  args: {
+    ids: v.optional(v.array(v.id("users"))),
+    all: v.optional(v.boolean()),
+    dryRun: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    let targets: Id<"users">[];
+    if (args.all) {
+      targets = (await ctx.db.query("users").collect()).map((u) => u._id);
+    } else if (args.ids?.length) {
+      targets = args.ids;
+    } else {
+      throw new Error("Pass ids or all:true");
+    }
+    if (args.dryRun ?? true) {
+      const users = [];
+      for (const id of targets) {
+        const user = await ctx.db.get(id);
+        if (!user) continue;
+        users.push({
+          _id: id,
+          name: user.name,
+          email: user.email ?? null,
+          alerts: (
+            await ctx.db
+              .query("alerts")
+              .withIndex("by_user", (q) => q.eq("userId", id))
+              .collect()
+          ).length,
+          threads: (
+            await ctx.db
+              .query("scoutThreads")
+              .withIndex("by_user", (q) => q.eq("userId", id))
+              .collect()
+          ).length,
+          saved: (
+            await ctx.db
+              .query("savedOffers")
+              .withIndex("by_user", (q) => q.eq("userId", id))
+              .collect()
+          ).length,
+        });
+      }
+      return { dryRun: true as const, users };
+    }
+    const totals = {
+      alerts: 0,
+      matches: 0,
+      savedOffers: 0,
+      profiles: 0,
+      threads: 0,
+      messages: 0,
+    };
+    for (const id of targets) {
+      if (!(await ctx.db.get(id))) continue;
+      const c = await deleteUserCascade(ctx, id);
+      for (const k of Object.keys(totals) as (keyof typeof totals)[]) {
+        totals[k] += c[k];
+      }
+    }
+    return { dryRun: false as const, deleted: targets, ...totals };
+  },
+});
+
+/** Self-service account deletion. Not wired into the UI yet. */
+export const deleteAccount = mutation({
+  args: { guestId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const user = await resolveUser(ctx, args.guestId);
+    if (!user) return { deleted: false };
+    await deleteUserCascade(ctx, user._id);
+    return { deleted: true };
   },
 });
 
