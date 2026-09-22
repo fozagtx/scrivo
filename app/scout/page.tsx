@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
@@ -39,6 +39,8 @@ const SUGGESTIONS = [
   "Any free trials for design tools?",
 ];
 
+const THREAD_KEY = "scrivo.scout.thread";
+
 const CADENCE_LABEL: Record<string, string> = {
   hourly: "Hourly",
   twice_daily: "Twice daily",
@@ -56,7 +58,29 @@ export default function ScoutPage() {
   const postUser = useMutation(api.scoutDb.postUser);
   const send = useAction(api.scout.send);
 
-  const [threadId, setThreadId] = useState<Id<"scoutThreads"> | null>(null);
+  // undefined = nothing chosen yet (resolve to most recent thread);
+  // null = explicit "New conversation".
+  const [chosen, setChosen] = useState<
+    Id<"scoutThreads"> | null | undefined
+  >(() => {
+    if (typeof window === "undefined") return undefined;
+    const v = window.localStorage.getItem(THREAD_KEY);
+    return v === null
+      ? undefined
+      : v === "new"
+        ? null
+        : (v as Id<"scoutThreads">);
+  });
+  const setThreadId = useCallback((id: Id<"scoutThreads"> | null) => {
+    setChosen(id);
+    window.localStorage.setItem(THREAD_KEY, id ?? "new");
+  }, []);
+  const threadId: Id<"scoutThreads"> | null =
+    chosen === undefined
+      ? (threads?.[0]?._id ?? null)
+      : chosen !== null && threads && !threads.some((t) => t._id === chosen)
+        ? (threads[0]?._id ?? null) // stored id no longer exists
+        : chosen;
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
