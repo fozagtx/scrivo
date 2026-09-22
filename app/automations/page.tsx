@@ -1,8 +1,7 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import {
   CircleCheck,
@@ -19,6 +18,7 @@ import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { AppShell, Page, PageHeader } from "@/components/app-shell";
 import { CandyButton } from "@/components/ui/candy-button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { NewAlertModal } from "@/components/new-alert-modal";
 import { useGuestId } from "@/lib/guest";
 
 const fmt = (cents?: number | null) =>
@@ -46,7 +46,21 @@ export default function AutomationsPage() {
 
 function AutomationsContent() {
   const params = useSearchParams();
-  const justCreated = params.get("created") === "1";
+  const router = useRouter();
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [created, setCreated] = useState(false);
+  const justCreated = created || params.get("created") === "1";
+
+  // Deep link: ?new=1 opens the wizard, then the URL is cleaned so a
+  // refresh doesn't reopen it.
+  useEffect(() => {
+    if (params.get("new") !== "1") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- latch the deep link into state before stripping the param
+    setWizardOpen(true);
+    router.replace("/automations");
+  }, [params, router]);
+
+  const closeWizard = () => setWizardOpen(false);
 
   const guestId = useGuestId();
   const alerts = useQuery(
@@ -74,12 +88,14 @@ function AutomationsContent() {
           title="Automations"
           description="Scheduled scans that email you when a deal matches."
           action={
-            <Link href="/alerts/new">
-              <CandyButton className="flex items-center gap-2 rounded-full px-5 py-2 text-sm">
-                <Plus className="size-4" />
-                New alert
-              </CandyButton>
-            </Link>
+            <CandyButton
+              type="button"
+              onClick={() => setWizardOpen(true)}
+              className="flex items-center gap-2 rounded-full px-5 py-2 text-sm"
+            >
+              <Plus className="size-4" />
+              New alert
+            </CandyButton>
           }
         />
 
@@ -93,12 +109,13 @@ function AutomationsContent() {
                 Create an alert and Scout will start watching for deals.
               </p>
             </div>
-            <Link
-              href="/alerts/new"
+            <button
+              type="button"
+              onClick={() => setWizardOpen(true)}
               className="rounded-[8px] border border-[#E5E3DC] px-4 py-2 text-sm font-medium"
             >
               Create an alert
-            </Link>
+            </button>
           </div>
         ) : (
           alerts.map((a: Doc<"alerts">) => (
@@ -135,6 +152,14 @@ function AutomationsContent() {
           </div>
         )}
       </Page>
+      <NewAlertModal
+        open={wizardOpen}
+        onClose={closeWizard}
+        onCreated={() => {
+          closeWizard();
+          setCreated(true);
+        }}
+      />
     </AppShell>
   );
 }

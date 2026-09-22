@@ -90,7 +90,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           )}
           <Link
-            href="/alerts/new"
+            href="/automations?new=1"
             aria-label="New alert"
             className="flex size-8 items-center justify-center rounded-lg border border-[#E5E3DC] text-[#55534D] transition-colors hover:bg-[#F8F7F3]"
           >
@@ -171,7 +171,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </span>
             )}
             <Link
-              href="/alerts/new"
+              href="/automations?new=1"
               title="New alert"
               aria-label="New alert"
               className="flex size-10 items-center justify-center rounded-lg bg-[#3F83F8] text-white transition-colors hover:bg-[#2563D6]"
@@ -196,7 +196,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
             )}
-            <Link href="/alerts/new" className="w-full">
+            <Link href="/automations?new=1" className="w-full">
               <CandyButton className="flex w-full items-center justify-center gap-1.5 rounded-full px-4 py-2 text-xs">
                 <Plus className="size-3.5" />
                 New alert

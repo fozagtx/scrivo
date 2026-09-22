@@ -336,7 +336,7 @@ export default function Home() {
                   </p>
                   <div className="mt-4 flex flex-col gap-2.5 text-sm text-[#1D1D1F]">
                     <Link href="/deals" className="hover:text-[#3F83F8]">Explore deals</Link>
-                    <Link href="/alerts/new" className="hover:text-[#3F83F8]">Set an alert</Link>
+                    <Link href="/automations?new=1" className="hover:text-[#3F83F8]">Set an alert</Link>
                     <Link href="/scout" className="hover:text-[#3F83F8]">Scout</Link>
                   </div>
                 </div>
