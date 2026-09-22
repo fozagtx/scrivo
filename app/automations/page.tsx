@@ -102,20 +102,11 @@ function AutomationsContent() {
         {alerts === undefined ? (
           <p className="py-16 text-center text-sm text-[#777773]">Loading…</p>
         ) : alerts.length === 0 ? (
-          <div className="flex items-center justify-between gap-4 rounded-[14px] border border-dashed border-[#E5E3DC] bg-white p-6">
-            <div className="flex flex-col gap-1">
-              <p className="text-base font-semibold">No alerts yet</p>
-              <p className="text-sm text-[#777773]">
-                Create an alert and Scout will start watching for deals.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setWizardOpen(true)}
-              className="rounded-[8px] border border-[#E5E3DC] px-4 py-2 text-sm font-medium"
-            >
-              Create an alert
-            </button>
+          <div className="flex flex-col gap-1 rounded-[14px] border border-dashed border-[#E5E3DC] bg-white p-6">
+            <p className="text-base font-semibold">No alerts yet</p>
+            <p className="text-sm text-[#777773]">
+              Create an alert and Scout will start watching for deals.
+            </p>
           </div>
         ) : (
           alerts.map((a: Doc<"alerts">) => (
