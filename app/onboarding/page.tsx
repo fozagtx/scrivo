@@ -7,7 +7,6 @@ import { useMutation, useQuery } from "convex/react";
 import { ArrowRight, Tag } from "lucide-react";
 
 import { api } from "@/convex/_generated/api";
-import { AppHeader } from "@/components/app-header";
 import { Reveal, RevealLine } from "@/components/reveal";
 import { CandyButton } from "@/components/ui/candy-button";
 import RetroDither from "@/components/canvasui/RetroDither";
@@ -53,7 +52,15 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-[#F8F7F3] font-sans text-[#1D1D1F]">
-      <AppHeader />
+      <header className="flex h-[72px] w-full items-center border-b border-[#E5E3DC] bg-white px-8">
+        <Link
+          href="/"
+          className="text-base font-semibold -tracking-[0.02em] text-[#1D1D1F]"
+          aria-label="Scrivo home"
+        >
+          Scrivo
+        </Link>
+      </header>
       <main className="flex min-h-[calc(100vh-72px)] flex-col items-center px-6 py-12">
         <div className="flex w-full max-w-[1180px] flex-col items-center gap-4">
           <section className="w-full overflow-hidden rounded-[22px] border border-[#E5E3DC] bg-white p-8 md:p-12">
